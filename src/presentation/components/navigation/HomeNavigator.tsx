@@ -5,9 +5,9 @@ import {
 } from "../../../shared/constants/navigation";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import HomeScreen from "../../screens/main/HomeScreen";
-import DiscoverScreen from "../../screens/main/DiscoverScreen";
-import NotificationsScreen from "../../screens/main/NotificationsScreen";
+import HomeScreen from "../../screens/home/HomeScreen";
+import DiscoverScreen from "../../screens/home/DiscoverScreen";
+import NotificationsScreen from "../../screens/home/NotificationsScreen";
 
 const BottomTab = createBottomTabNavigator();
 
