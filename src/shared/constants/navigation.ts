@@ -1,9 +1,15 @@
 export const NAVIGATOR_NAMES = {
-  Onboarding: "Onboarding",
-  MainApp: "MainApp",
+  Onboarding: "OnboardingNavigator",
+  HomeNavigator: "HomeNavigator",
 };
 
 export const ONBOARDING_SCREEN_NAMES = {
-  Login: "Login",
-  Register: "Register",
+  Login: "LoginScreen",
+  Register: "RegisterScreen",
+};
+
+export const HOME_SCREEN_NAMES = {
+  Home: "HomeScreen",
+  Discover: "DiscoverScreen",
+  Notifications: "NotificationsScreen",
 };

@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ONBOARDING_SCREEN_NAMES } from "../../../shared/constants/navigation";
+import { useAuth } from "../../context/AuthContext";
 
 interface LoginScreenProps {
   navigation: any;
@@ -19,6 +20,7 @@ interface LoginScreenProps {
 const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useAuth();
 
   const handleLogin = () => {
     if (!email || !password) {
@@ -28,6 +30,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
     // Placeholder for login logic
     Alert.alert("Login Attempt", `Email: ${email}, Password: ${password}`);
     // In a real app, you would integrate with your authentication service here
+    login();
   };
 
   const handleRegister = () => {

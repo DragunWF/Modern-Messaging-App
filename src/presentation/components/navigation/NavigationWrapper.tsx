@@ -1,10 +1,13 @@
 import { NavigationContainer } from "@react-navigation/native";
 import LoginNavigator from "./LoginNavigator";
+import { useAuth } from "../../context/AuthContext";
+import HomeNavigator from "./HomeNavigator";
 
 function NavigationWrapper() {
+  const { isAuthenticated } = useAuth();
   return (
     <NavigationContainer>
-      <LoginNavigator />
+      {isAuthenticated ? <HomeNavigator /> : <LoginNavigator />}
     </NavigationContainer>
   );
 }
