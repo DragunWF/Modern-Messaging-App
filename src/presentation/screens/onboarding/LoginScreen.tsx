@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
@@ -12,6 +11,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ONBOARDING_SCREEN_NAMES } from "../../../shared/constants/navigation";
 import { useAuth } from "../../context/AuthContext";
+import TextInput from "../../components/ui/TextInput";
+import Button from "../../components/ui/Button";
 
 interface LoginScreenProps {
   navigation: any;
@@ -50,7 +51,6 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
 
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.input}
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
@@ -58,7 +58,6 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
             autoCapitalize="none"
           />
           <TextInput
-            style={styles.input}
             placeholder="Password"
             value={password}
             onChangeText={setPassword}
@@ -69,9 +68,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.loginButton]} onPress={handleLogin}>
-            <Text style={styles.loginButtonText}>Login</Text>
-          </TouchableOpacity>
+          <Button title="Login" onPress={handleLogin} />
         </View>
 
         <View style={styles.signupContainer}>
@@ -114,19 +111,6 @@ const styles = StyleSheet.create({
     width: "100%",
     marginBottom: 30,
   },
-  input: {
-    width: "100%",
-    padding: 15,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    marginBottom: 15,
-    fontSize: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
-  },
   forgotPasswordButton: {
     alignSelf: "flex-end",
     marginBottom: 20,
@@ -134,23 +118,6 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     color: "#007AFF", // Placeholder link color
     fontSize: 14,
-  },
-  loginButton: {
-    width: "100%",
-    padding: 18,
-    backgroundColor: "#007AFF", // Placeholder button color
-    borderRadius: 10,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  loginButtonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "bold",
   },
   signupContainer: {
     flexDirection: "row",

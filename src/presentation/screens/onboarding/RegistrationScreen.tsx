@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
@@ -11,7 +10,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
-import { ONBOARDING_SCREEN_NAMES } from "../../../shared/constants/navigation";
+import TextInput from "../../components/ui/TextInput";
+import Button from "../../components/ui/Button";
 
 interface RegistrationScreenProps {
   navigation: any;
@@ -59,14 +59,12 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
 
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.input}
             placeholder="Username"
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
           />
           <TextInput
-            style={styles.input}
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
@@ -74,26 +72,19 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
             autoCapitalize="none"
           />
           <TextInput
-            style={styles.input}
             placeholder="Password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
           <TextInput
-            style={styles.input}
             placeholder="Confirm Password"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry
           />
 
-          <TouchableOpacity
-            style={[styles.registerButton]}
-            onPress={handleRegister}
-          >
-            <Text style={styles.registerButtonText}>Register</Text>
-          </TouchableOpacity>
+          <Button title="Register" onPress={handleRegister} />
         </View>
 
         <View style={styles.loginContainer}>
@@ -135,36 +126,6 @@ const styles = StyleSheet.create({
   inputContainer: {
     width: "100%",
     marginBottom: 30,
-  },
-  input: {
-    width: "100%",
-    padding: 15,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    marginBottom: 15,
-    fontSize: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
-  },
-  registerButton: {
-    width: "100%",
-    padding: 18,
-    backgroundColor: "#007AFF", // Placeholder button color
-    borderRadius: 10,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  registerButtonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "bold",
   },
   loginContainer: {
     flexDirection: "row",
