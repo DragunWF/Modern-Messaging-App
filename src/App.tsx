@@ -6,7 +6,7 @@ import { AuthProvider } from "./presentation/context/AuthContext";
 export default function App() {
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <AuthProvider>
         <NavigationWrapper />
       </AuthProvider>
