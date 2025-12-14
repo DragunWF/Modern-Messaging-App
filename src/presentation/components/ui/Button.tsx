@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, Text, StyleSheet, PressableProps } from "react-native";
+import { lightTheme } from "../../../shared/constants/colors";
 
 interface ButtonProps extends PressableProps {
   title: string;
@@ -8,11 +9,8 @@ interface ButtonProps extends PressableProps {
 const Button = ({ title, style, ...props }: ButtonProps) => {
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.button,
-        pressed && styles.pressed,
-        typeof style === "function" ? style({ pressed }) : style,
-      ]}
+      // @ts-ignore
+      style={({ pressed }) => [styles.button, pressed && styles.pressed, style]}
       {...props}
     >
       <Text style={styles.buttonText}>{title}</Text>
@@ -24,10 +22,10 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     padding: 18,
-    backgroundColor: "#007AFF", // Placeholder button color
+    backgroundColor: lightTheme.primary,
     borderRadius: 10,
     alignItems: "center",
-    justifyContent: "center", // Added for safety
+    justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -38,7 +36,7 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   buttonText: {
-    color: "#FFFFFF",
+    color: lightTheme.textInverse,
     fontSize: 18,
     fontWeight: "bold",
   },

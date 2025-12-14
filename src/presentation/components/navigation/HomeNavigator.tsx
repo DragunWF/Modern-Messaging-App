@@ -4,6 +4,7 @@ import {
   HOME_SCREEN_NAMES,
 } from "../../../shared/constants/navigation";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { lightTheme } from "../../../shared/constants/colors";
 
 import HomeScreen from "../../screens/home/HomeScreen";
 import DiscoverScreen from "../../screens/home/DiscoverScreen";
@@ -18,6 +19,8 @@ function HomeNavigator() {
       initialRouteName={HOME_SCREEN_NAMES.Home}
       screenOptions={{
         headerShown: false,
+        tabBarActiveTintColor: lightTheme.primary,
+        tabBarInactiveTintColor: lightTheme.textSecondary,
       }}
     >
       <BottomTab.Screen

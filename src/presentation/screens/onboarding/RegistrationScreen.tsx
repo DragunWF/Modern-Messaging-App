@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import TextInput from "../../components/ui/TextInput";
 import Button from "../../components/ui/Button";
+import { lightTheme } from "../../../shared/constants/colors";
 
 interface RegistrationScreenProps {
   navigation: any;
@@ -101,7 +102,7 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F7F7F7", // Placeholder background color
+    backgroundColor: lightTheme.background,
   },
   container: {
     flex: 1,
@@ -116,11 +117,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#333333", // Placeholder text color
+    color: lightTheme.textPrimary,
   },
   subtitle: {
     fontSize: 18,
-    color: "#666666", // Placeholder text color
+    color: lightTheme.textSecondary,
     marginTop: 8,
   },
   inputContainer: {
@@ -132,11 +133,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   loginText: {
-    color: "#666666",
+    color: lightTheme.textSecondary,
     fontSize: 16,
   },
   loginButtonText: {
-    color: "#007AFF", // Placeholder link color
+    color: lightTheme.info,
     fontSize: 16,
     fontWeight: "bold",
     marginLeft: 5,

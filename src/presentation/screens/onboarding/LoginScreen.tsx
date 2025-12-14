@@ -13,6 +13,7 @@ import { ONBOARDING_SCREEN_NAMES } from "../../../shared/constants/navigation";
 import { useAuth } from "../../context/AuthContext";
 import TextInput from "../../components/ui/TextInput";
 import Button from "../../components/ui/Button";
+import { lightTheme } from "../../../shared/constants/colors";
 
 interface LoginScreenProps {
   navigation: any;
@@ -85,7 +86,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F7F7F7", // Placeholder background color
+    backgroundColor: lightTheme.background,
   },
   container: {
     flex: 1,
@@ -100,11 +101,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#333333", // Placeholder text color
+    color: lightTheme.textPrimary,
   },
   subtitle: {
     fontSize: 18,
-    color: "#666666", // Placeholder text color
+    color: lightTheme.textSecondary,
     marginTop: 8,
   },
   inputContainer: {
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   forgotPasswordText: {
-    color: "#007AFF", // Placeholder link color
+    color: lightTheme.info,
     fontSize: 14,
   },
   signupContainer: {
@@ -124,11 +125,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   signupText: {
-    color: "#666666",
+    color: lightTheme.textSecondary,
     fontSize: 16,
   },
   signupButtonText: {
-    color: "#007AFF", // Placeholder link color
+    color: lightTheme.info,
     fontSize: 16,
     fontWeight: "bold",
     marginLeft: 5,

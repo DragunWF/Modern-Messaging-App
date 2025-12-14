@@ -32,7 +32,7 @@ const palette = {
   // Semantic Alerts
   red500: "#EF4444", // Error
   amber500: "#F59E0B", // Warning
-  blue500: "#3B82F6", // Info / Links
+  teal500: "#0D9488", // Info / Links
 };
 
 // ☀️ 2. LIGHT THEME (The "Fresh" Look)
@@ -65,6 +65,7 @@ export const lightTheme = {
   error: palette.red500,
   success: palette.green500,
   warning: palette.amber500,
+  info: palette.teal500, // Links
 
   // Status Bar Style (for Expo)
   statusBar: "dark" as const,
@@ -100,6 +101,7 @@ export const darkTheme = {
   error: palette.red500,
   success: palette.green300, // Brighter green for success in dark mode
   warning: palette.amber500,
+  info: palette.teal500, // Links
 
   // Status Bar Style (for Expo)
   statusBar: "light" as const,
