@@ -1,4 +1,4 @@
-interface Message {
+export interface Message {
   // Core attributes
   id: number;
   senderId: number;
