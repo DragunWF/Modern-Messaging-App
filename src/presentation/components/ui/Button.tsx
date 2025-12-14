@@ -1,32 +1,22 @@
 import React from "react";
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  TouchableOpacityProps,
-  StyleProp,
-  ViewStyle,
-} from "react-native";
+import { Pressable, Text, StyleSheet, PressableProps } from "react-native";
 
-interface ButtonProps extends TouchableOpacityProps {
+interface ButtonProps extends PressableProps {
   title: string;
 }
 
 const Button = ({ title, style, ...props }: ButtonProps) => {
   return (
-    <TouchableOpacity
-      // @ts-ignore
-      style={({ pressed }) =>
-        [
-          styles.button,
-          pressed && styles.pressed,
-          style,
-        ] as StyleProp<ViewStyle>
-      }
+    <Pressable
+      style={({ pressed }) => [
+        styles.button,
+        pressed && styles.pressed,
+        typeof style === "function" ? style({ pressed }) : style,
+      ]}
       {...props}
     >
       <Text style={styles.buttonText}>{title}</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
@@ -37,6 +27,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#007AFF", // Placeholder button color
     borderRadius: 10,
     alignItems: "center",
+    justifyContent: "center", // Added for safety
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
