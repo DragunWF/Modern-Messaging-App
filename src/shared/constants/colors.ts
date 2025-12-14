@@ -1,71 +1,109 @@
 /**
- * CogniTrack Dark Theme Color Palette
- *
- * Psychology-based color selection:
- * - Deep purples/blues: Promote focus, mindfulness, and self-reflection
- * - Teal accents: Represent balance, clarity, and positive change
- * - Warm warnings: Gentle alerts without harsh red (reduces anxiety)
- * - Dark backgrounds: Reduce eye strain and create a calm, introspective environment
+ * Modern Messaging App Color Palette
+ * * Design Philosophy: "Fresh & Connected"
+ * - Primary Green: Represents growth, safety, and active communication.
+ * - Light Mode: Clean, spacious, and airy (like the reference image).
+ * - Dark Mode: Deep forest tones to reduce eye strain while maintaining brand identity.
  */
 
-export const mainColors = {
-  // 🔮 Primary (Deep Purple/Blue) – Mindfulness, focus, and cognitive awareness
-  primary100: "#C8C4E6", // Lightest tint - for disabled states or very subtle highlights
-  primary300: "#8B82D9", // Soft interactive states, active tabs
-  primary500: "#6B5FCC", // Main brand color - primary buttons, active elements
-  primary700: "#4A3FA3", // Pressed states, emphasis
-  primary900: "#2D2566", // Deepest shade - text on light backgrounds
+// 🎨 1. THE RAW PALETTE (Primitives)
+const palette = {
+  // Fresh Green (Derived from the "FreshFood" reference)
+  green50: "#E8F5E9", // Very light tint for backgrounds
+  green100: "#C8E6C9", // User bubbles (light mode)
+  green300: "#81C784", // Accents
+  green500: "#22C55E", // MAIN BRAND COLOR (Vibrant Leaf Green)
+  green600: "#16A34A", // Pressed states
+  green800: "#14532D", // Deep green for dark mode elements
+  green900: "#052e16", // Almost black green
 
-  // � Accent (Calm Teal) – Balance, clarity, and positive transformation
-  accent100: "#B8E6E1", // Lightest tint for highlights
-  accent300: "#7DD4CB", // Success states, positive feedback
-  accent500: "#4DBDB3", // Main accent - success indicators, progress
-  accent700: "#3A9990", // Hover states for accent elements
-  accent900: "#2A7069", // Deep accent for contrast
+  // Neutrals (Grays)
+  white: "#FFFFFF",
+  gray50: "#F9FAFB", // Off-white background
+  gray100: "#F3F4F6", // Input fields (light)
+  gray200: "#E5E7EB", // Dividers
+  gray300: "#D1D5DB", // Disabled text
+  gray500: "#6B7280", // Secondary text
+  gray700: "#374151", // Primary text (soft black)
+  gray800: "#1F2937", // Card background (dark)
+  gray900: "#111827", // Main background (dark)
+  black: "#000000",
 
-  // 🌑 Backgrounds (Dark, calming base)
-  background: "#0F0E17", // Deep navy-black - main app background
-  backgroundElevated: "#1A1823", // Slightly elevated surfaces (cards, modals)
-  backgroundCard: "#232135", // Card backgrounds with slight purple tint
-  backgroundInput: "#2A2838", // Input fields, interactive surfaces
-
-  // 📝 Text (Optimized for dark backgrounds)
-  textPrimary: "#FFFFFE", // Primary readable text - high contrast
-  textSecondary: "#A7A9BE", // Secondary info, less emphasis
-  textMuted: "#6E7191", // Muted text, placeholders, disabled
-  textOnPrimary: "#FFFFFF", // Text on colored buttons/surfaces
-  textOnAccent: "#0F0E17", // Text on accent colored elements
-
-  // 🧱 Borders & Dividers
-  border: "#2E2D3D", // Subtle borders for cards and dividers
-  borderActive: "#4A4766", // Active/focused input borders
-  borderHighlight: "#6B5FCC", // Highlighted or selected borders
-
-  // 🎯 Overlays & Shadows
-  overlay: "rgba(15, 14, 23, 0.8)", // Modal overlays
-  shadowLight: "rgba(0, 0, 0, 0.2)", // Subtle shadows
-  shadowMedium: "rgba(0, 0, 0, 0.4)", // Card shadows
-  shadowStrong: "rgba(0, 0, 0, 0.6)", // Strong elevation shadows
+  // Semantic Alerts
+  red500: "#EF4444", // Error
+  amber500: "#F59E0B", // Warning
+  blue500: "#3B82F6", // Info / Links
 };
 
-export const utilityColors = {
-  // ✅ Success (Calm teal - aligned with accent)
-  success100: "#B8E6E1",
-  success500: "#4DBDB3", // Confirmations, achievements
-  success700: "#3A9990",
+// ☀️ 2. LIGHT THEME (The "Fresh" Look)
+export const lightTheme = {
+  // Backgrounds
+  background: palette.white, // Main app background
+  backgroundCard: palette.white, // Cards/Modals
+  backgroundInput: palette.gray100, // Search bars, text inputs
+  backgroundChatBubble: palette.gray100, // Incoming messages (Them)
 
-  // ⚠️ Warning (Warm amber - less aggressive than red)
-  warning100: "#FFE4BA",
-  warning500: "#FFB84D", // Gentle warnings, caution indicators
-  warning700: "#E69A2E",
+  // Brand / Interactive
+  primary: palette.green500, // Main buttons, active tabs, Outgoing messages (Me)
+  primarySoft: palette.green50, // Active states background
+  primaryPressed: palette.green600, // Button press state
 
-  // 🚫 Error (Soft coral - serious but not harsh)
-  error100: "#FFD4CC",
-  error500: "#FF6B6B", // Validation errors, critical alerts
-  error700: "#E64E4E",
+  // Text
+  textPrimary: palette.gray900, // Headings, main content
+  textSecondary: palette.gray500, // Timestamps, subheaders
+  textInverse: palette.white, // Text inside Green buttons/bubbles
+  textPlaceholder: palette.gray300, // Input placeholders
 
-  // ℹ️ Info (Soft blue - neutral information)
-  info100: "#C4D9F2",
-  info500: "#5B9FE3", // Informational messages, tips
-  info700: "#3D7FC2",
+  // Borders & Dividers
+  border: palette.gray200,
+
+  // Messaging Specific
+  onlineStatus: palette.green500,
+  offlineStatus: palette.gray300,
+
+  // Utility
+  error: palette.red500,
+  success: palette.green500,
+  warning: palette.amber500,
+
+  // Status Bar Style (for Expo)
+  statusBar: "dark" as const,
 };
+
+// 🌙 3. DARK THEME (The "Forest" Look)
+export const darkTheme = {
+  // Backgrounds
+  background: palette.gray900, // Deep dark gray/black
+  backgroundCard: palette.gray800, // Slightly lighter for elevation
+  backgroundInput: palette.gray800, // Search bars, text inputs
+  backgroundChatBubble: palette.gray700, // Incoming messages (Them)
+
+  // Brand / Interactive
+  primary: palette.green500, // Keep brand color vibrant (or use green600 for less glare)
+  primarySoft: palette.green900, // Very subtle green tint for active lists
+  primaryPressed: palette.green300, // Lighter green for feedback in dark mode
+
+  // Text
+  textPrimary: palette.white, // Main content
+  textSecondary: palette.gray300, // Timestamps
+  textInverse: palette.white, // Text inside Green buttons
+  textPlaceholder: palette.gray500,
+
+  // Borders & Dividers
+  border: palette.gray700, // Darker dividers
+
+  // Messaging Specific
+  onlineStatus: palette.green500,
+  offlineStatus: palette.gray500,
+
+  // Utility
+  error: palette.red500,
+  success: palette.green300, // Brighter green for success in dark mode
+  warning: palette.amber500,
+
+  // Status Bar Style (for Expo)
+  statusBar: "light" as const,
+};
+
+// TypeScript type inference for easy usage in components
+export type ThemeColors = typeof lightTheme;
