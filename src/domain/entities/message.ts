@@ -1,4 +1,4 @@
-export interface Message {
+export default interface Message {
   // Core attributes
   id: number;
   senderId: number;
