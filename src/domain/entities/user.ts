@@ -1,8 +1,8 @@
 export default interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
   password: string;
   isOnline: boolean;
-  friends: number[]; // IDs of friends
+  friends: string[]; // IDs of friends
 }

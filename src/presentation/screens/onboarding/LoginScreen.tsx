@@ -9,7 +9,10 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ONBOARDING_SCREEN_NAMES } from "../../../shared/constants/navigation";
+import {
+  ONBOARDING_SCREEN_NAMES,
+  HOME_SCREEN_NAMES,
+} from "../../../shared/constants/navigation";
 import { useAuth } from "../../context/AuthContext";
 import TextInput from "../../components/ui/TextInput";
 import Button from "../../components/ui/Button";
@@ -24,15 +27,22 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const [password, setPassword] = useState("");
   const { login } = useAuth();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password.");
       return;
     }
-    // Placeholder for login logic
-    Alert.alert("Login Attempt", `Email: ${email}, Password: ${password}`);
-    // In a real app, you would integrate with your authentication service here
-    login();
+
+    // TODO: Testing navigation, remove later
+    navigation.navigate(HOME_SCREEN_NAMES.Home);
+
+    // TODO: Uncomment when ready to test login firebase authentication
+    // try {
+    //   await login(email, password);
+    //   navigation.navigate(HOME_SCREEN_NAMES.Home);
+    // } catch (error: any) {
+    //   Alert.alert("Login Failed", error.message || "An error occurred");
+    // }
   };
 
   const handleRegister = () => {

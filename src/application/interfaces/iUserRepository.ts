@@ -1,9 +1,9 @@
 import type User from "../../domain/entities/user";
 
 export default interface IUserRepository {
-  getUserById(id: number): Promise<User | null>;
+  getUserById(id: string): Promise<User | null>;
   createUser(user: User): Promise<User>;
   updateUser(user: User): Promise<User>;
-  deleteUser(id: number): Promise<void>;
+  deleteUser(id: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
 }
