@@ -3,12 +3,12 @@
 ## Login Screen
 
 - [x] UI layout
-- [ ] Login integration
+- [x] Login integration
 
 ## Registration Screen
 
 - [x] UI layout
-- [ ] Account registration integration
+- [x] Account registration integration
 
 ## Home Screen
 
