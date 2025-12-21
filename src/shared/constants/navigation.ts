@@ -13,6 +13,7 @@ export const HOME_SCREEN_NAMES = {
   Home: "HomeScreen",
   Discover: "DiscoverScreen",
   Notifications: "NotificationsScreen",
+  Settings: "SettingsScreen",
 };
 
 export const CHAT_SCREEN_NAMES = {
