@@ -4,10 +4,14 @@ import type IUserRepository from "../../application/interfaces/iUserRepository";
 import type User from "../../domain/entities/user";
 
 class UserRepository implements IUserRepository {
+  private static collectionName = "users";
+
   async getUserById(id: string): Promise<User | null> {
     const dbRef = ref(rtdb);
     try {
-      const snapshot = await get(child(dbRef, `users/${id}`));
+      const snapshot = await get(
+        child(dbRef, `${UserRepository.collectionName}/${id}`)
+      );
       if (snapshot.exists()) {
         return snapshot.val() as User;
       } else {
@@ -21,7 +25,7 @@ class UserRepository implements IUserRepository {
 
   async createUser(user: User): Promise<User> {
     try {
-      await set(ref(rtdb, 'users/' + user.id), user);
+      await set(ref(rtdb, `${UserRepository.collectionName}/` + user.id), user);
       return user;
     } catch (error) {
       console.error("Error creating user:", error);
@@ -32,7 +36,7 @@ class UserRepository implements IUserRepository {
   async updateUser(user: User): Promise<User> {
     try {
       const updates: any = {};
-      updates['/users/' + user.id] = user;
+      updates[`/${UserRepository.collectionName}/` + user.id] = user;
       await update(ref(rtdb), updates);
       return user;
     } catch (error) {
@@ -43,7 +47,7 @@ class UserRepository implements IUserRepository {
 
   async deleteUser(id: string): Promise<void> {
     try {
-      await remove(ref(rtdb, 'users/' + id));
+      await remove(ref(rtdb, `${UserRepository.collectionName}/` + id));
     } catch (error) {
       console.error("Error deleting user:", error);
       throw error;
@@ -53,7 +57,7 @@ class UserRepository implements IUserRepository {
   async getAllUsers(): Promise<User[]> {
     const dbRef = ref(rtdb);
     try {
-      const snapshot = await get(child(dbRef, `users`));
+      const snapshot = await get(child(dbRef, UserRepository.collectionName));
       if (snapshot.exists()) {
         const usersDict = snapshot.val();
         return Object.values(usersDict);
