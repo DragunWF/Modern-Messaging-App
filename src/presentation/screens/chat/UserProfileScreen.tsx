@@ -1,6 +1,6 @@
 import { StyleSheet, View, Text } from "react-native";
 
-function UserProfile() {
+function UserProfileScreen() {
   return (
     <View>
       <Text>UserProfile</Text>
@@ -10,4 +10,4 @@ function UserProfile() {
 
 const styles = StyleSheet.create({});
 
-export default UserProfile;
+export default UserProfileScreen;

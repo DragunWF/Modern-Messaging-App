@@ -23,9 +23,9 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { login } = useAuth();
+  const { register } = useAuth();
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields.");
       return;
@@ -34,13 +34,15 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
       Alert.alert("Error", "Passwords do not match.");
       return;
     }
-    // Placeholder for registration logic
-    Alert.alert(
-      "Registration Attempt",
-      `Username: ${username}, Email: ${email}, Password: ${password}`
-    );
-    // In a real app, you would integrate with your authentication service here
-    login();
+
+    try {
+      await register(email, password, username);
+      // Upon successful registration, the AuthContext should update user state,
+      // and the MainNavigator (if set up) should automatically switch to Home.
+      // Or we can manually navigate if needed, but usually auth state drives navigation.
+    } catch (error: any) {
+      Alert.alert("Registration Failed", error.message || "An error occurred");
+    }
   };
 
   const handleGoToLogin = () => {
