@@ -29,6 +29,12 @@
 - [ ] UI layout
 - [ ] Accept friend request feature
 
+## Settings Screen
+
+- [ ] UI Layout
+- [ ] Dark/light theme toggle
+- [ ] Display of user account details
+
 ## Chat Screen
 
 - [ ] UI layout
