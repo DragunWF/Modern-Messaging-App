@@ -34,15 +34,15 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
     }
 
     // TODO: Testing navigation, remove later
-    navigation.navigate(HOME_SCREEN_NAMES.Home);
+    // navigation.navigate(HOME_SCREEN_NAMES.Home); // Cannot navigate directly; HomeNavigator is not mounted until authenticated
 
     // TODO: Uncomment when ready to test login firebase authentication
-    // try {
-    //   await login(email, password);
-    //   navigation.navigate(HOME_SCREEN_NAMES.Home);
-    // } catch (error: any) {
-    //   Alert.alert("Login Failed", error.message || "An error occurred");
-    // }
+    try {
+      await login(email, password);
+      // navigation.navigate(HOME_SCREEN_NAMES.Home); // Auto-navigates via NavigationWrapper when isAuthenticated becomes true
+    } catch (error: any) {
+      Alert.alert("Login Failed", error.message || "An error occurred");
+    }
   };
 
   const handleRegister = () => {
