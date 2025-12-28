@@ -19,6 +19,10 @@ function SettingsScreen() {
     console.log("Toggle Theme pressed");
   };
 
+  const handleViewProfile = () => {
+    console.log("View Profile pressed");
+  };
+
   const handleLogout = () => {
     Alert.alert(
       "Are you sure?",
@@ -61,6 +65,13 @@ function SettingsScreen() {
           title="Toggle Theme"
           iconName="brightness-6"
           onPress={handleToggleTheme}
+        />
+
+        {/* Logout Button */}
+        <IconButton
+          title="Your Profile"
+          iconName="person"
+          onPress={handleViewProfile}
         />
 
         {/* Logout Button */}
