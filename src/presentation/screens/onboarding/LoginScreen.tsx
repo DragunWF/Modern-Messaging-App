@@ -9,14 +9,12 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  ONBOARDING_SCREEN_NAMES,
-  HOME_SCREEN_NAMES,
-} from "../../../shared/constants/navigation";
+import { ONBOARDING_SCREEN_NAMES } from "../../../shared/constants/navigation";
 import { useAuth } from "../../context/AuthContext";
 import TextInput from "../../components/ui/TextInput";
 import Button from "../../components/ui/Button";
-import { lightTheme } from "../../../shared/constants/colors";
+import { useTheme } from "../../context/ThemeContext";
+import { isValidEmail } from "../../../shared/common/utils";
 
 interface LoginScreenProps {
   navigation: any;
@@ -26,23 +24,23 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useAuth();
+  const { colors } = useTheme();
 
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password.");
       return;
     }
+    if (!isValidEmail(email)) {
+      Alert.alert("Error", "Please enter a valid email address.");
+      return;
+    }
 
-    // TODO: Testing navigation, remove later
-    navigation.navigate(HOME_SCREEN_NAMES.Home);
-
-    // TODO: Uncomment when ready to test login firebase authentication
-    // try {
-    //   await login(email, password);
-    //   navigation.navigate(HOME_SCREEN_NAMES.Home);
-    // } catch (error: any) {
-    //   Alert.alert("Login Failed", error.message || "An error occurred");
-    // }
+    try {
+      await login(email, password);
+    } catch (error: any) {
+      Alert.alert("Login Failed", error.message || "An error occurred");
+    }
   };
 
   const handleRegister = () => {
@@ -50,14 +48,20 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Login to your account</Text>
-          <Text style={styles.subtitle}>Sign in to continue</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Login to your account
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Sign in to continue
+          </Text>
         </View>
 
         <View style={styles.inputContainer}>
@@ -65,7 +69,6 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
-            keyboardType="email-address"
             autoCapitalize="none"
           />
           <TextInput
@@ -76,16 +79,22 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
           />
 
           <TouchableOpacity style={styles.forgotPasswordButton}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            <Text style={[styles.forgotPasswordText, { color: colors.info }]}>
+              Forgot Password?
+            </Text>
           </TouchableOpacity>
 
           <Button title="Login" onPress={handleLogin} />
         </View>
 
         <View style={styles.signupContainer}>
-          <Text style={styles.signupText}>Don't have an account?</Text>
+          <Text style={[styles.signupText, { color: colors.textSecondary }]}>
+            Don't have an account?
+          </Text>
           <TouchableOpacity onPress={handleRegister}>
-            <Text style={styles.signupButtonText}>Sign Up</Text>
+            <Text style={[styles.signupButtonText, { color: colors.info }]}>
+              Sign Up
+            </Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -96,7 +105,6 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   container: {
     flex: 1,
@@ -111,11 +119,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    color: lightTheme.textPrimary,
   },
   subtitle: {
     fontSize: 18,
-    color: lightTheme.textSecondary,
     marginTop: 8,
   },
   inputContainer: {
@@ -127,7 +133,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   forgotPasswordText: {
-    color: lightTheme.info,
     fontSize: 14,
   },
   signupContainer: {
@@ -135,11 +140,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   signupText: {
-    color: lightTheme.textSecondary,
     fontSize: 16,
   },
   signupButtonText: {
-    color: lightTheme.info,
     fontSize: 16,
     fontWeight: "bold",
     marginLeft: 5,

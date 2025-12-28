@@ -12,7 +12,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import TextInput from "../../components/ui/TextInput";
 import Button from "../../components/ui/Button";
-import { lightTheme } from "../../../shared/constants/colors";
+import { useTheme } from "../../context/ThemeContext";
+import { isValidEmail } from "../../../shared/common/utils";
 
 interface RegistrationScreenProps {
   navigation: any;
@@ -24,10 +25,15 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const { register } = useAuth();
+  const { colors } = useTheme();
 
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      Alert.alert("Error", "Please enter a valid email address.");
       return;
     }
     if (password !== confirmPassword) {
@@ -37,9 +43,6 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
 
     try {
       await register(email, password, username);
-      // Upon successful registration, the AuthContext should update user state,
-      // and the MainNavigator (if set up) should automatically switch to Home.
-      // Or we can manually navigate if needed, but usually auth state drives navigation.
     } catch (error: any) {
       Alert.alert("Registration Failed", error.message || "An error occurred");
     }
@@ -50,14 +53,14 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Create an account</Text>
-          <Text style={styles.subtitle}>Start your journey with us today</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>Create an account</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Start your journey with us today</Text>
         </View>
 
         <View style={styles.inputContainer}>
@@ -91,9 +94,9 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
         </View>
 
         <View style={styles.loginContainer}>
-          <Text style={styles.loginText}>Already have an account?</Text>
+          <Text style={[styles.loginText, { color: colors.textSecondary }]}>Already have an account?</Text>
           <TouchableOpacity onPress={handleGoToLogin}>
-            <Text style={styles.loginButtonText}>Sign In</Text>
+            <Text style={[styles.loginButtonText, { color: colors.info }]}>Sign In</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -104,7 +107,6 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   container: {
     flex: 1,
@@ -119,11 +121,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    color: lightTheme.textPrimary,
   },
   subtitle: {
     fontSize: 18,
-    color: lightTheme.textSecondary,
     marginTop: 8,
   },
   inputContainer: {
@@ -135,11 +135,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   loginText: {
-    color: lightTheme.textSecondary,
     fontSize: 16,
   },
   loginButtonText: {
-    color: lightTheme.info,
     fontSize: 16,
     fontWeight: "bold",
     marginLeft: 5,

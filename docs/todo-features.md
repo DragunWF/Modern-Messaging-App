@@ -3,12 +3,12 @@
 ## Login Screen
 
 - [x] UI layout
-- [ ] Login integration
+- [x] Login integration
 
 ## Registration Screen
 
 - [x] UI layout
-- [ ] Account registration integration
+- [x] Account registration integration
 
 ## Home Screen
 
@@ -28,6 +28,13 @@
 
 - [ ] UI layout
 - [ ] Accept friend request feature
+
+## Settings Screen
+
+- [x] UI Layout
+- [x] Dark/light theme toggle
+- [x] Logout functionality
+- [ ] Display of user account details
 
 ## Chat Screen
 

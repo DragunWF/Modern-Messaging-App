@@ -4,39 +4,32 @@ import {
   HOME_SCREEN_NAMES,
 } from "../../../shared/constants/navigation";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { lightTheme } from "../../../shared/constants/colors";
+import { useTheme } from "../../context/ThemeContext";
 
 import HomeScreen from "../../screens/home/HomeScreen";
 import DiscoverScreen from "../../screens/home/DiscoverScreen";
 import NotificationsScreen from "../../screens/home/NotificationsScreen";
+import SettingsScreen from "../../screens/home/SettingsScreen";
 
 const BottomTab = createBottomTabNavigator();
 
 function HomeNavigator() {
+  const { colors } = useTheme();
+
   return (
     <BottomTab.Navigator
       id={NAVIGATOR_NAMES.HomeNavigator}
       initialRouteName={HOME_SCREEN_NAMES.Home}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: lightTheme.primary,
-        tabBarInactiveTintColor: lightTheme.textSecondary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarStyle: {
+          backgroundColor: colors.backgroundCard,
+          borderTopColor: colors.border,
+        },
       }}
     >
-      <BottomTab.Screen
-        name={HOME_SCREEN_NAMES.Discover}
-        component={DiscoverScreen}
-        options={{
-          tabBarLabel: "Discover",
-          tabBarIcon: ({ color, size, focused }) => (
-            <MaterialCommunityIcons
-              name={focused ? "compass" : "compass-outline"}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
       <BottomTab.Screen
         name={HOME_SCREEN_NAMES.Home}
         component={HomeScreen}
@@ -52,6 +45,20 @@ function HomeNavigator() {
         }}
       />
       <BottomTab.Screen
+        name={HOME_SCREEN_NAMES.Discover}
+        component={DiscoverScreen}
+        options={{
+          tabBarLabel: "Discover",
+          tabBarIcon: ({ color, size, focused }) => (
+            <MaterialCommunityIcons
+              name={focused ? "compass" : "compass-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <BottomTab.Screen
         name={HOME_SCREEN_NAMES.Notifications}
         component={NotificationsScreen}
         options={{
@@ -59,6 +66,20 @@ function HomeNavigator() {
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "bell" : "bell-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <BottomTab.Screen
+        name={HOME_SCREEN_NAMES.Settings}
+        component={SettingsScreen}
+        options={{
+          tabBarLabel: "Settings",
+          tabBarIcon: ({ color, size, focused }) => (
+            <MaterialCommunityIcons
+              name={focused ? "cog" : "cog-outline"}
               size={size}
               color={color}
             />
