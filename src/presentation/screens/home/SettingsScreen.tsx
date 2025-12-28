@@ -10,11 +10,11 @@ import {
 import Header from "../../components/ui/Header";
 import IconButton from "../../components/ui/IconButton";
 import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../context/ThemeContext"; // Import useTheme
+import { useTheme } from "../../context/ThemeContext";
 
 function SettingsScreen() {
   const { logout } = useAuth();
-  const { toggleTheme, colors, currentTheme } = useTheme(); // Use useTheme hook
+  const { toggleTheme, colors, currentTheme } = useTheme(); 
 
   const handleToggleTheme = () => {
     toggleTheme(); // Call toggleTheme from context
@@ -47,7 +47,7 @@ function SettingsScreen() {
 
   const handleOpenGithubProfile = () => {
     // Replace with your actual GitHub profile URL
-    const githubUrl = "https://github.com/marcplarisan";
+    const githubUrl = "https://github.com/DragunWF";
     Linking.openURL(githubUrl).catch((err) =>
       console.error("Failed to open URL:", err)
     );
@@ -56,7 +56,7 @@ function SettingsScreen() {
   return (
     <View
       style={[
-        styles.fullScreenContainer,
+        styles.rootContainer,
         { backgroundColor: colors.background },
       ]}
     >
@@ -106,7 +106,7 @@ function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  fullScreenContainer: {
+  rootContainer: {
     flex: 1,
   },
   contentContainer: {
