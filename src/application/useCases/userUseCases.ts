@@ -9,10 +9,17 @@ export class UserUseCases {
     private userRepository: IUserRepository
   ) {}
 
-  async registerUser(email: string, password: string, username: string): Promise<User> {
+  async registerUser(
+    email: string,
+    password: string,
+    username: string
+  ): Promise<User> {
     try {
       // 1. Register in Firebase Auth
-      const userCredential: UserCredential = await this.authService.register(email, password);
+      const userCredential: UserCredential = await this.authService.register(
+        email,
+        password
+      );
       const uid = userCredential.user.uid;
 
       // 2. Create User Entity
@@ -43,7 +50,7 @@ export class UserUseCases {
 
       // 2. Retrieve User Profile
       const user = await this.userRepository.getUserById(uid);
-      
+
       return user;
     } catch (error) {
       console.error("Error in loginUser use case:", error);

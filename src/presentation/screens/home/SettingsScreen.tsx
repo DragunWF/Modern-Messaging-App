@@ -5,18 +5,43 @@ import {
   Text,
   TouchableOpacity,
   Linking,
+  Alert,
 } from "react-native";
 import Header from "../../components/ui/Header";
 import IconButton from "../../components/ui/IconButton";
 import { lightTheme } from "../../../shared/constants/colors";
+import { useAuth } from "../../context/AuthContext";
 
 function SettingsScreen() {
+  const { logout } = useAuth();
+
   const handleToggleTheme = () => {
     console.log("Toggle Theme pressed");
   };
 
   const handleLogout = () => {
-    console.log("Logout pressed");
+    Alert.alert(
+      "Are you sure?",
+      "You will have to enter your username and password again to login.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await logout();
+            } catch (error) {
+              console.error("Logout failed:", error);
+              Alert.alert("Error", "Failed to logout. Please try again.");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleOpenGithubProfile = () => {
