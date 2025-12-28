@@ -4,13 +4,22 @@ import {
   TextInputProps,
   StyleSheet,
 } from "react-native";
-import { lightTheme } from "../../../shared/constants/colors";
+import { useTheme } from "../../context/ThemeContext";
 
 const TextInput = (props: TextInputProps) => {
+  const { colors } = useTheme();
+
   return (
     <RNTextInput
-      style={[styles.input, props.style]}
-      placeholderTextColor={lightTheme.textPlaceholder}
+      style={[
+        styles.input,
+        {
+          backgroundColor: colors.backgroundInput,
+          color: colors.textPrimary,
+        },
+        props.style,
+      ]}
+      placeholderTextColor={colors.textPlaceholder}
       {...props}
     />
   );
@@ -20,11 +29,9 @@ const styles = StyleSheet.create({
   input: {
     width: "100%",
     padding: 15,
-    backgroundColor: lightTheme.backgroundInput,
     borderRadius: 10,
     marginBottom: 15,
     fontSize: 16,
-    color: lightTheme.textPrimary,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,

@@ -1,19 +1,28 @@
 import React from "react";
 import { Pressable, Text, StyleSheet, PressableProps } from "react-native";
-import { lightTheme } from "../../../shared/constants/colors";
+import { useTheme } from "../../context/ThemeContext";
 
 interface ButtonProps extends PressableProps {
   title: string;
 }
 
 const Button = ({ title, style, ...props }: ButtonProps) => {
+  const { colors } = useTheme();
+
   return (
     <Pressable
       // @ts-ignore
-      style={({ pressed }) => [styles.button, pressed && styles.pressed, style]}
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: colors.primary },
+        pressed && styles.pressed,
+        style,
+      ]}
       {...props}
     >
-      <Text style={styles.buttonText}>{title}</Text>
+      <Text style={[styles.buttonText, { color: colors.textInverse }]}>
+        {title}
+      </Text>
     </Pressable>
   );
 };
@@ -22,7 +31,6 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     padding: 18,
-    backgroundColor: lightTheme.primary,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
@@ -36,7 +44,6 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   buttonText: {
-    color: lightTheme.textInverse,
     fontSize: 18,
     fontWeight: "bold",
   },

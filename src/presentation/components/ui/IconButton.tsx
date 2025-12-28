@@ -6,8 +6,8 @@ import {
   PressableProps,
   View,
 } from "react-native";
-import { lightTheme } from "../../../shared/constants/colors";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTheme } from "../../context/ThemeContext";
 
 interface IconButtonProps extends PressableProps {
   title: string;
@@ -19,25 +19,36 @@ interface IconButtonProps extends PressableProps {
 const IconButton = ({
   title,
   iconName,
-  iconColor = lightTheme.textPrimary,
+  iconColor,
   iconSize = 24,
   style,
   ...props
 }: IconButtonProps) => {
+  const { colors } = useTheme();
+  // Use provided iconColor or default to theme text color
+  const finalIconColor = iconColor || colors.textPrimary;
+
   return (
     <Pressable
       // @ts-ignore
-      style={({ pressed }) => [styles.button, pressed && styles.pressed, style]}
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: colors.backgroundCard },
+        pressed && styles.pressed,
+        style,
+      ]}
       {...props}
     >
       <View style={styles.contentContainer}>
         <MaterialIcons
           name={iconName}
           size={iconSize}
-          color={iconColor}
+          color={finalIconColor}
           style={styles.icon}
         />
-        <Text style={styles.buttonText}>{title}</Text>
+        <Text style={[styles.buttonText, { color: colors.textPrimary }]}>
+          {title}
+        </Text>
       </View>
     </Pressable>
   );
@@ -47,7 +58,6 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     padding: 18,
-    backgroundColor: lightTheme.backgroundCard,
     borderRadius: 10,
     marginBottom: 10,
     shadowColor: "#000",
@@ -67,7 +77,6 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   buttonText: {
-    color: lightTheme.textPrimary,
     fontSize: 18,
     fontWeight: "500",
   },

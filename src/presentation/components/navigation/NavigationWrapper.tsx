@@ -1,3 +1,4 @@
+import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import LoginNavigator from "./LoginNavigator";
 import { useAuth } from "../../context/AuthContext";
