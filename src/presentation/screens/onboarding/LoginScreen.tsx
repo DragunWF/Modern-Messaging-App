@@ -17,19 +17,24 @@ import { useAuth } from "../../context/AuthContext";
 import TextInput from "../../components/ui/TextInput";
 import Button from "../../components/ui/Button";
 import { lightTheme } from "../../../shared/constants/colors";
+import { isValidEmail } from "../../../shared/common/utils";
 
 interface LoginScreenProps {
   navigation: any;
 }
 
 const LoginScreen = ({ navigation }: LoginScreenProps) => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useAuth();
 
   const handleLogin = async () => {
-    if (!username || !password) {
+    if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password.");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      Alert.alert("Error", "Please enter a valid email address.");
       return;
     }
 
@@ -38,8 +43,8 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
 
     // TODO: Uncomment when ready to test login firebase authentication
     try {
-      await login(username, password);
-      navigation.navigate(HOME_SCREEN_NAMES.Home);
+      await login(email, password);
+      // Navigation is handled automatically by the auth state change in NavigationWrapper
     } catch (error: any) {
       Alert.alert("Login Failed", error.message || "An error occurred");
     }
@@ -62,9 +67,9 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
 
         <View style={styles.inputContainer}>
           <TextInput
-            placeholder="Username"
-            value={username}
-            onChangeText={setUsername}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
             autoCapitalize="none"
           />
           <TextInput

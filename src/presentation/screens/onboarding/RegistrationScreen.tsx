@@ -13,6 +13,7 @@ import { useAuth } from "../../context/AuthContext";
 import TextInput from "../../components/ui/TextInput";
 import Button from "../../components/ui/Button";
 import { lightTheme } from "../../../shared/constants/colors";
+import { isValidEmail } from "../../../shared/common/utils";
 
 interface RegistrationScreenProps {
   navigation: any;
@@ -28,6 +29,10 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      Alert.alert("Error", "Please enter a valid email address.");
       return;
     }
     if (password !== confirmPassword) {
