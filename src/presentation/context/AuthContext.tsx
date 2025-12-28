@@ -1,10 +1,5 @@
-import React, {
-  createContext,
-  useState,
-  useContext,
-  useEffect,
-  ReactNode,
-} from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import type { ReactNode } from "react";
 import { UserUseCases } from "../../application/useCases/userUseCases";
 import UserRepository from "../../infrastructure/repositories/userRepository";
 import { FirebaseAuthService } from "../../infrastructure/auth/authService";
