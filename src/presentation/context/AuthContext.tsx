@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import type { ReactNode } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserUseCases } from "../../application/useCases/userUseCases";
 import UserRepository from "../../infrastructure/repositories/userRepository";
 import { FirebaseAuthService } from "../../infrastructure/auth/authService";
@@ -22,6 +23,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const USER_STORAGE_KEY = "@auth_user";
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -35,6 +38,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const userUseCases = new UserUseCases(authService, userRepository);
 
   useEffect(() => {
+    // Check storage first for immediate access
+    const loadFromStorage = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+          setIsAuthenticated(true);
+        }
+      } catch (e) {
+        console.warn("Failed to load user from storage", e);
+      }
+    };
+    loadFromStorage();
+
     // Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -46,6 +63,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (userProfile) {
             setUser(userProfile);
             setIsAuthenticated(true);
+            await AsyncStorage.setItem(
+              USER_STORAGE_KEY,
+              JSON.stringify(userProfile)
+            );
           } else {
             console.warn(
               "User authenticated in Firebase but profile not found in DB"
@@ -53,15 +74,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // In a production app, you might redirect to a profile creation screen
             setIsAuthenticated(false);
             setUser(null);
+            await AsyncStorage.removeItem(USER_STORAGE_KEY);
           }
         } catch (e) {
           console.error("Error fetching user profile", e);
           setIsAuthenticated(false);
           setUser(null);
+          await AsyncStorage.removeItem(USER_STORAGE_KEY);
         }
       } else {
         setUser(null);
         setIsAuthenticated(false);
+        await AsyncStorage.removeItem(USER_STORAGE_KEY);
       }
       setIsLoading(false);
     });
@@ -76,6 +100,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (loggedInUser) {
         setUser(loggedInUser);
         setIsAuthenticated(true);
+        await AsyncStorage.setItem(
+          USER_STORAGE_KEY,
+          JSON.stringify(loggedInUser)
+        );
       }
     } catch (error) {
       console.error("Login failed", error);
@@ -99,6 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       );
       setUser(newUser);
       setIsAuthenticated(true);
+      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
     } catch (error) {
       console.error("Registration failed", error);
       throw error;
@@ -113,6 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await userUseCases.logoutUser();
       setUser(null);
       setIsAuthenticated(false);
+      await AsyncStorage.removeItem(USER_STORAGE_KEY);
     } catch (error) {
       console.error("Logout failed", error);
       throw error;

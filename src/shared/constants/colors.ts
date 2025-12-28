@@ -108,4 +108,4 @@ export const darkTheme = {
 };
 
 // TypeScript type inference for easy usage in components
-export type ThemeColors = typeof lightTheme;
+export type ThemeColors = typeof lightTheme | typeof darkTheme;
