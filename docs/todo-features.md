@@ -32,7 +32,7 @@
 ## Settings Screen
 
 - [x] UI Layout
-- [ ] Dark/light theme toggle
+- [x] Dark/light theme toggle
 - [x] Logout functionality
 - [ ] Display of user account details
 
