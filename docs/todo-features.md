@@ -31,8 +31,9 @@
 
 ## Settings Screen
 
-- [ ] UI Layout
+- [x] UI Layout
 - [ ] Dark/light theme toggle
+- [ ] Logout functionality
 - [ ] Display of user account details
 
 ## Chat Screen
