@@ -25,20 +25,6 @@ function HomeNavigator() {
       }}
     >
       <BottomTab.Screen
-        name={HOME_SCREEN_NAMES.Discover}
-        component={DiscoverScreen}
-        options={{
-          tabBarLabel: "Discover",
-          tabBarIcon: ({ color, size, focused }) => (
-            <MaterialCommunityIcons
-              name={focused ? "compass" : "compass-outline"}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <BottomTab.Screen
         name={HOME_SCREEN_NAMES.Home}
         component={HomeScreen}
         options={{
@@ -46,6 +32,20 @@ function HomeNavigator() {
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "home" : "home-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <BottomTab.Screen
+        name={HOME_SCREEN_NAMES.Discover}
+        component={DiscoverScreen}
+        options={{
+          tabBarLabel: "Discover",
+          tabBarIcon: ({ color, size, focused }) => (
+            <MaterialCommunityIcons
+              name={focused ? "compass" : "compass-outline"}
               size={size}
               color={color}
             />
