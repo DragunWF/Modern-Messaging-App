@@ -14,7 +14,7 @@ import { useTheme } from "../../context/ThemeContext";
 
 function SettingsScreen() {
   const { logout } = useAuth();
-  const { toggleTheme, colors, currentTheme } = useTheme(); 
+  const { toggleTheme, colors, currentTheme } = useTheme();
 
   const handleToggleTheme = () => {
     toggleTheme(); // Call toggleTheme from context
@@ -55,10 +55,7 @@ function SettingsScreen() {
 
   return (
     <View
-      style={[
-        styles.rootContainer,
-        { backgroundColor: colors.background },
-      ]}
+      style={[styles.rootContainer, { backgroundColor: colors.background }]}
     >
       <Header title="Settings" />
       <View style={styles.contentContainer}>
