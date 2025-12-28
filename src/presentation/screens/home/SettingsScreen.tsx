@@ -9,43 +9,40 @@ import {
 } from "react-native";
 import Header from "../../components/ui/Header";
 import IconButton from "../../components/ui/IconButton";
-import { lightTheme } from "../../../shared/constants/colors";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext"; // Import useTheme
 
 function SettingsScreen() {
   const { logout } = useAuth();
+  const { toggleTheme, colors, currentTheme } = useTheme(); // Use useTheme hook
 
   const handleToggleTheme = () => {
-    console.log("Toggle Theme pressed");
+    toggleTheme(); // Call toggleTheme from context
+  };
+
+  const handleLogout = () => {
+    Alert.alert("Are you sure you want to logout of your account?", "", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await logout();
+          } catch (error) {
+            console.error("Logout failed:", error);
+            Alert.alert("Error", "Failed to logout. Please try again.");
+          }
+        },
+      },
+    ]);
   };
 
   const handleViewProfile = () => {
     console.log("View Profile pressed");
-  };
-
-  const handleLogout = () => {
-    Alert.alert(
-      "Are you sure?",
-      "You will have to enter your username and password again to login.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Logout",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await logout();
-            } catch (error) {
-              console.error("Logout failed:", error);
-              Alert.alert("Error", "Failed to logout. Please try again.");
-            }
-          },
-        },
-      ]
-    );
   };
 
   const handleOpenGithubProfile = () => {
@@ -57,17 +54,24 @@ function SettingsScreen() {
   };
 
   return (
-    <View style={styles.fullScreenContainer}>
+    <View
+      style={[
+        styles.fullScreenContainer,
+        { backgroundColor: colors.background },
+      ]}
+    >
       <Header title="Settings" />
       <View style={styles.contentContainer}>
         {/* Theme Toggle Button */}
         <IconButton
-          title="Toggle Theme"
+          title={`Toggle Theme (${
+            currentTheme === "light" ? "Dark" : "Light"
+          })`}
           iconName="brightness-6"
           onPress={handleToggleTheme}
         />
 
-        {/* Logout Button */}
+        {/* Your Profile Button */}
         <IconButton
           title="Your Profile"
           iconName="person"
@@ -78,10 +82,22 @@ function SettingsScreen() {
         <IconButton title="Logout" iconName="logout" onPress={handleLogout} />
 
         {/* Footer */}
-        <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>Developed by Marc Plarisan</Text>
+        <View
+          style={[
+            styles.footerContainer,
+            {
+              borderTopColor: colors.border,
+              backgroundColor: colors.backgroundCard,
+            },
+          ]}
+        >
+          <Text style={[styles.footerText, { color: colors.textSecondary }]}>
+            Developed by Marc Plarisan
+          </Text>
           <TouchableOpacity onPress={handleOpenGithubProfile}>
-            <Text style={styles.githubLinkText}>GitHub: DragunWF</Text>
+            <Text style={[styles.githubLinkText, { color: colors.info }]}>
+              GitHub: DragunWF
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -92,7 +108,6 @@ function SettingsScreen() {
 const styles = StyleSheet.create({
   fullScreenContainer: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   contentContainer: {
     flex: 1,
@@ -104,17 +119,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: lightTheme.border,
-    backgroundColor: lightTheme.backgroundCard,
     gap: 10,
     marginTop: 18,
   },
   footerText: {
-    color: lightTheme.textSecondary,
     fontSize: 14,
   },
   githubLinkText: {
-    color: lightTheme.info, // Using info color for links
     fontSize: 14,
     fontWeight: "bold",
     textDecorationLine: "underline",
