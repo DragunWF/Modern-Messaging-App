@@ -35,7 +35,7 @@
 - [x] UI Layout
 - [x] Dark/light theme toggle
 - [x] Logout functionality
-- [ ] Display of user account details
+- [x] Display of user account details
 
 ## Chat Screen
 
