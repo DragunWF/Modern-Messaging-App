@@ -10,6 +10,7 @@ import HomeScreen from "../../screens/home/HomeScreen";
 import DiscoverScreen from "../../screens/home/DiscoverScreen";
 import NotificationsScreen from "../../screens/home/NotificationsScreen";
 import SettingsScreen from "../../screens/home/SettingsScreen";
+import SettingsNavigator from "./SettingsNavigator";
 
 const BottomTab = createBottomTabNavigator();
 
@@ -73,8 +74,8 @@ function HomeNavigator() {
         }}
       />
       <BottomTab.Screen
-        name={HOME_SCREEN_NAMES.Settings}
-        component={SettingsScreen}
+        name={NAVIGATOR_NAMES.SettingsNavigator}
+        component={SettingsNavigator}
         options={{
           tabBarLabel: "Settings",
           tabBarIcon: ({ color, size, focused }) => (
