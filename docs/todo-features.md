@@ -13,6 +13,7 @@
 ## Home Screen
 
 - [ ] UI layout
+- [ ] Search functionality
 - [ ] Group creation feature
 - [ ] Online/offline friend statuses
 - [ ] Chat unread count
