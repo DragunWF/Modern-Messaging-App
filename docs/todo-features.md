@@ -22,13 +22,14 @@
 ## Discover Screen
 
 - [x] UI layout
-- [ ] Add friend feature
+- [x] Add friend feature
 - [ ] Search friend feature
 
 ## Notifications Screen
 
-- [ ] UI layout
-- [ ] Accept friend request feature
+- [x] UI layout
+- [x] Accept friend request feature
+- [x] Reject friend request feature
 
 ## Settings Screen
 
