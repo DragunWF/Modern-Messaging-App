@@ -5,4 +5,5 @@ export default interface User {
   password: string;
   isOnline: boolean;
   friends: string[]; // IDs of friends
+  friendRequests: string[]; // IDs of users who sent a friend request
 }

@@ -1,4 +1,14 @@
-import { ref, get, set, child, update, remove, query, orderByChild, equalTo } from "firebase/database";
+import {
+  ref,
+  get,
+  set,
+  child,
+  update,
+  remove,
+  query,
+  orderByChild,
+  equalTo,
+} from "firebase/database";
 import { rtdb } from "../database/firebaseConfig";
 import type IUserRepository from "../../application/interfaces/iUserRepository";
 import type User from "../../domain/entities/user";
@@ -26,9 +36,13 @@ class UserRepository implements IUserRepository {
   async getUserByUsername(username: string): Promise<User | null> {
     try {
       const dbRef = ref(rtdb, UserRepository.collectionName);
-      const usernameQuery = query(dbRef, orderByChild("username"), equalTo(username));
+      const usernameQuery = query(
+        dbRef,
+        orderByChild("username"),
+        equalTo(username)
+      );
       const snapshot = await get(usernameQuery);
-      
+
       if (snapshot.exists()) {
         const users = snapshot.val();
         // snapshot.val() returns an object where keys are UIDs and values are User objects.

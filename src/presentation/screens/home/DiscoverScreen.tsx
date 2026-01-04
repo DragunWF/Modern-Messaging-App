@@ -6,15 +6,14 @@ import {
   FlatList,
   SafeAreaView,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
+import { useService } from "../../context/ServiceContext";
 import SearchBar from "../../components/ui/SearchBar";
 import UserCard from "../../components/user/UserCard";
 import User from "../../../domain/entities/user";
-import { UserUseCases } from "../../../application/useCases/userUseCases";
-import UserRepository from "../../../infrastructure/repositories/userRepository";
-import { FirebaseAuthService } from "../../../infrastructure/auth/authService";
 
 function DiscoverScreen() {
   const { colors } = useTheme();
@@ -24,11 +23,8 @@ function DiscoverScreen() {
   const [displayedUsers, setDisplayedUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize Use Case
-  // In a real app, use dependency injection or a service locator
-  const authService = new FirebaseAuthService();
-  const userRepository = new UserRepository();
-  const userUseCases = new UserUseCases(authService, userRepository);
+  // Access Use Cases via ServiceContext
+  const { userUseCases } = useService();
 
   useEffect(() => {
     fetchUsers();
@@ -49,9 +45,15 @@ function DiscoverScreen() {
     }
   };
 
-  const handleAddFriend = (userId: string) => {
-    console.log("Add friend request sent to:", userId);
-    // Future integration: call UseCase to send friend request
+  const handleAddFriend = async (userId: string) => {
+    if (!currentUser) return;
+    try {
+      await userUseCases.sendFriendRequest(currentUser.id, userId);
+      Alert.alert("Success", "Friend request sent!");
+    } catch (error: any) {
+      console.error("Failed to send friend request", error);
+      Alert.alert("Error", error.message || "Failed to send friend request");
+    }
   };
 
   const handleSearch = (text: string) => {
