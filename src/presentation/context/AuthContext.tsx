@@ -1,9 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import type { ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { UserUseCases } from "../../application/useCases/userUseCases";
-import UserRepository from "../../infrastructure/repositories/userRepository";
-import { FirebaseAuthService } from "../../infrastructure/auth/authService";
+import { useService } from "./ServiceContext";
 import User from "../../domain/entities/user";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../infrastructure/database/firebaseConfig";
@@ -30,12 +28,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize dependencies
-  // We use useMemo to avoid re-instantiating on every render, although these are lightweight.
-  // In a more complex app, we might use dependency injection.
-  const authService = new FirebaseAuthService();
-  const userRepository = new UserRepository();
-  const userUseCases = new UserUseCases(authService, userRepository);
+  // Use dependency injection from ServiceContext
+  const { userUseCases } = useService();
 
   useEffect(() => {
     // Check storage first for immediate access
@@ -53,13 +47,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loadFromStorage();
 
     // Listen for auth state changes
+    // Ideally, this listener should also be abstracted in AuthService
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          // Fetch user profile from DB
-          const userProfile = await userRepository.getUserById(
-            firebaseUser.uid
-          );
+          // Fetch user profile using Use Case
+          const userProfile = await userUseCases.getUserById(firebaseUser.uid);
           if (userProfile) {
             setUser(userProfile);
             setIsAuthenticated(true);
@@ -71,7 +64,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             console.warn(
               "User authenticated in Firebase but profile not found in DB"
             );
-            // In a production app, you might redirect to a profile creation screen
             setIsAuthenticated(false);
             setUser(null);
             await AsyncStorage.removeItem(USER_STORAGE_KEY);
@@ -91,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [userUseCases]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);

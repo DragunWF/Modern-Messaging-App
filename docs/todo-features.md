@@ -13,6 +13,7 @@
 ## Home Screen
 
 - [ ] UI layout
+- [ ] Search functionality
 - [ ] Group creation feature
 - [ ] Online/offline friend statuses
 - [ ] Chat unread count
@@ -20,21 +21,22 @@
 
 ## Discover Screen
 
-- [ ] UI layout
-- [ ] Add friend feature
+- [x] UI layout
+- [x] Add friend feature
 - [ ] Search friend feature
 
 ## Notifications Screen
 
-- [ ] UI layout
-- [ ] Accept friend request feature
+- [x] UI layout
+- [x] Accept friend request feature
+- [x] Reject friend request feature
 
 ## Settings Screen
 
 - [x] UI Layout
 - [x] Dark/light theme toggle
 - [x] Logout functionality
-- [ ] Display of user account details
+- [x] Display of user account details
 
 ## Chat Screen
 
@@ -50,5 +52,6 @@
 
 ## User Profile
 
-- [ ] UI layout
-- [ ] User information display
+- [x] UI layout
+- [x] User information display
+ß
