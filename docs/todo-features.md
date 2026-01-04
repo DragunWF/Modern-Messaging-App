@@ -21,7 +21,7 @@
 
 ## Discover Screen
 
-- [ ] UI layout
+- [x] UI layout
 - [ ] Add friend feature
 - [ ] Search friend feature
 
