@@ -52,5 +52,6 @@
 
 ## User Profile
 
-- [ ] UI layout
-- [ ] User information display
+- [x] UI layout
+- [x] User information display
+ß
