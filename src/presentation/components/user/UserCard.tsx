@@ -29,9 +29,6 @@ const UserCard = ({ user, onAddFriend }: UserCardProps) => {
         <Text style={[styles.username, { color: colors.textPrimary }]}>
           {user.username}
         </Text>
-        <Text style={[styles.email, { color: colors.textSecondary }]}>
-          {user.email}
-        </Text>
       </View>
       <TouchableOpacity
         style={[styles.addButton, { backgroundColor: colors.primary }]}
