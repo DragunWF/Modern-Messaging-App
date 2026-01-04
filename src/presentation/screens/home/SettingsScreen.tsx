@@ -9,10 +9,11 @@ import {
 } from "react-native";
 import Header from "../../components/ui/Header";
 import IconButton from "../../components/ui/IconButton";
+import { SETTINGS_SCREEN_NAMES } from "../../../shared/constants/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 
-function SettingsScreen() {
+function SettingsScreen({ navigation }: any) {
   const { logout } = useAuth();
   const { toggleTheme, colors, currentTheme } = useTheme();
 
@@ -42,7 +43,7 @@ function SettingsScreen() {
   };
 
   const handleViewProfile = () => {
-    console.log("View Profile pressed");
+    navigation.navigate(SETTINGS_SCREEN_NAMES.Profile);
   };
 
   const handleOpenGithubProfile = () => {
