@@ -34,6 +34,7 @@ export class UserUseCases {
         isOnline: true,
         friends: [],
         friendRequests: [],
+        outgoingFriendRequests: [],
       };
 
       // 3. Save to Repository
@@ -112,17 +113,28 @@ export class UserUseCases {
         throw new Error("Already friends");
       }
 
-      // Check if request already sent
+      // Check if request already sent by fromUser to toUser
       if (toUser.friendRequests?.includes(fromUserId)) {
         throw new Error("Friend request already sent");
       }
+      // Also check from the sender's side
+      if (fromUser.outgoingFriendRequests?.includes(toUserId)) {
+        throw new Error("Friend request already sent by you");
+      }
 
-      // Add to friendRequests list
-      const updatedRequests = toUser.friendRequests
+      // Add to recipient's friendRequests list (incoming)
+      const updatedIncomingRequests = toUser.friendRequests
         ? [...toUser.friendRequests, fromUserId]
         : [fromUserId];
-      const updatedUser = { ...toUser, friendRequests: updatedRequests };
-      await this.userRepository.updateUser(updatedUser);
+      const updatedToUser = { ...toUser, friendRequests: updatedIncomingRequests };
+      await this.userRepository.updateUser(updatedToUser);
+
+      // Add to sender's outgoingFriendRequests list
+      const updatedOutgoingRequests = fromUser.outgoingFriendRequests
+        ? [...fromUser.outgoingFriendRequests, toUserId]
+        : [toUserId];
+      const updatedFromUser = { ...fromUser, outgoingFriendRequests: updatedOutgoingRequests };
+      await this.userRepository.updateUser(updatedFromUser);
 
       // Create Notification
       const notification: Notification = {
@@ -159,22 +171,36 @@ export class UserUseCases {
       const currentUserFriends = currentUser.friends
         ? [...currentUser.friends, requesterId]
         : [requesterId];
-      // Remove from requests
+      // Remove from incoming requests
       const currentUserRequests = currentUser.friendRequests
         ? currentUser.friendRequests.filter((id) => id !== requesterId)
+        : [];
+      // Remove from outgoing requests if any (e.g. mutual request sent at same time)
+      const currentUserOutgoingRequests = currentUser.outgoingFriendRequests
+        ? currentUser.outgoingFriendRequests.filter((id) => id !== requesterId)
         : [];
 
       const updatedCurrentUser = {
         ...currentUser,
         friends: currentUserFriends,
         friendRequests: currentUserRequests,
+        outgoingFriendRequests: currentUserOutgoingRequests,
       };
       await this.userRepository.updateUser(updatedCurrentUser);
 
       const requesterFriends = requester.friends
         ? [...requester.friends, currentUserId]
         : [currentUserId];
-      const updatedRequester = { ...requester, friends: requesterFriends };
+      // Remove from outgoing requests for requester (as it's now accepted)
+      const requesterOutgoingRequests = requester.outgoingFriendRequests
+        ? requester.outgoingFriendRequests.filter((id) => id !== currentUserId)
+        : [];
+
+      const updatedRequester = {
+        ...requester,
+        friends: requesterFriends,
+        outgoingFriendRequests: requesterOutgoingRequests,
+      };
       await this.userRepository.updateUser(updatedRequester);
 
       // Mark notification as read (or delete it)
@@ -182,8 +208,6 @@ export class UserUseCases {
         currentUserId,
         notificationId
       );
-      // Optional: Delete the request notification?
-      // await this.notificationRepository.deleteNotification(currentUserId, notificationId);
 
       // Send acceptance notification to requester
       const notification: Notification = {
@@ -213,7 +237,7 @@ export class UserUseCases {
       const currentUser = await this.userRepository.getUserById(currentUserId);
       if (!currentUser) throw new Error("User not found");
 
-      // Remove from requests
+      // Remove from incoming requests
       const currentUserRequests = currentUser.friendRequests
         ? currentUser.friendRequests.filter((id) => id !== requesterId)
         : [];
@@ -229,7 +253,6 @@ export class UserUseCases {
         currentUserId,
         notificationId
       );
-      // await this.notificationRepository.deleteNotification(currentUserId, notificationId);
     } catch (error) {
       console.error("Error rejecting friend request:", error);
       throw error;

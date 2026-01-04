@@ -17,39 +17,58 @@ import User from "../../../domain/entities/user";
 
 function DiscoverScreen() {
   const { colors } = useTheme();
-  const { user: currentUser } = useAuth();
+  // Using user from useAuth for the ID, but will refetch full user for outgoing requests
+  const { user: authUser } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [displayedUsers, setDisplayedUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // State to hold the current user's full, up-to-date profile including outgoingFriendRequests
+  const [fullCurrentUser, setFullCurrentUser] = useState<User | null>(null);
 
   // Access Use Cases via ServiceContext
   const { userUseCases } = useService();
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    fetchUsersAndCurrentUser();
+  }, [authUser?.id]); // Re-fetch if the authenticated user changes
 
-  const fetchUsers = async () => {
+  const fetchUsersAndCurrentUser = async () => {
     setIsLoading(true);
     try {
-      const users = await userUseCases.getAllUsers();
-      // Filter out current user
-      const filteredUsers = users.filter((u) => u.id !== currentUser?.id);
+      // Fetch all users
+      const allFetchedUsers = await userUseCases.getAllUsers();
+
+      // Fetch the most up-to-date current user profile from the database
+      let currentLoggedInUser: User | null = null;
+      if (authUser?.id) {
+        currentLoggedInUser = await userUseCases.getUserById(authUser.id);
+        setFullCurrentUser(currentLoggedInUser);
+      }
+
+      // Filter out current user from the list to display
+      const filteredUsers = allFetchedUsers.filter(
+        (u) => u.id !== authUser?.id
+      );
       setAllUsers(filteredUsers);
       setDisplayedUsers(filteredUsers);
     } catch (error) {
-      console.error("Failed to fetch users", error);
+      console.error("Failed to fetch users or current user", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleAddFriend = async (userId: string) => {
-    if (!currentUser) return;
+    if (!authUser?.id) {
+      Alert.alert("Error", "You must be logged in to send friend requests.");
+      return;
+    }
     try {
-      await userUseCases.sendFriendRequest(currentUser.id, userId);
+      await userUseCases.sendFriendRequest(authUser.id, userId);
       Alert.alert("Success", "Friend request sent!");
+      // Refresh both lists to update the button state
+      fetchUsersAndCurrentUser();
     } catch (error: any) {
       console.error("Failed to send friend request", error);
       Alert.alert("Error", error.message || "Failed to send friend request");
@@ -96,7 +115,13 @@ function DiscoverScreen() {
           data={displayedUsers}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <UserCard user={item} onAddFriend={handleAddFriend} />
+            <UserCard
+              user={item}
+              onAddFriend={handleAddFriend}
+              isRequestPending={
+                !!fullCurrentUser?.outgoingFriendRequests?.includes(item.id)
+              }
+            />
           )}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={

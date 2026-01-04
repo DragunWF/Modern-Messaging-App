@@ -53,14 +53,20 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.headerContainer}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>Create an account</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Start your journey with us today</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Create an account
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Start your journey with us today
+          </Text>
         </View>
 
         <View style={styles.inputContainer}>
@@ -94,9 +100,13 @@ const RegistrationScreen = ({ navigation }: RegistrationScreenProps) => {
         </View>
 
         <View style={styles.loginContainer}>
-          <Text style={[styles.loginText, { color: colors.textSecondary }]}>Already have an account?</Text>
+          <Text style={[styles.loginText, { color: colors.textSecondary }]}>
+            Already have an account?
+          </Text>
           <TouchableOpacity onPress={handleGoToLogin}>
-            <Text style={[styles.loginButtonText, { color: colors.info }]}>Sign In</Text>
+            <Text style={[styles.loginButtonText, { color: colors.info }]}>
+              Sign In
+            </Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
