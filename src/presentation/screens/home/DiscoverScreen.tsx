@@ -1,58 +1,53 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, SafeAreaView } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  SafeAreaView,
+  ActivityIndicator,
+} from "react-native";
 import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext";
 import SearchBar from "../../components/ui/SearchBar";
 import UserCard from "../../components/user/UserCard";
 import User from "../../../domain/entities/user";
-
-// Mock Data (Remove when integrating with backend)
-const MOCK_USERS: User[] = [
-  {
-    id: "1",
-    username: "alice_w",
-    email: "alice@example.com",
-    password: "",
-    isOnline: true,
-    friends: [],
-  },
-  {
-    id: "2",
-    username: "bob_builder",
-    email: "bob@example.com",
-    password: "",
-    isOnline: false,
-    friends: [],
-  },
-  {
-    id: "3",
-    username: "charlie_brown",
-    email: "charlie@example.com",
-    password: "",
-    isOnline: true,
-    friends: [],
-  },
-  {
-    id: "4",
-    username: "diana_prince",
-    email: "diana@example.com",
-    password: "",
-    isOnline: false,
-    friends: [],
-  },
-  {
-    id: "5",
-    username: "ethan_hunt",
-    email: "ethan@example.com",
-    password: "",
-    isOnline: true,
-    friends: [],
-  },
-];
+import { UserUseCases } from "../../../application/useCases/userUseCases";
+import UserRepository from "../../../infrastructure/repositories/userRepository";
+import { FirebaseAuthService } from "../../../infrastructure/auth/authService";
 
 function DiscoverScreen() {
   const { colors } = useTheme();
+  const { user: currentUser } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [displayedUsers, setDisplayedUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize Use Case
+  // In a real app, use dependency injection or a service locator
+  const authService = new FirebaseAuthService();
+  const userRepository = new UserRepository();
+  const userUseCases = new UserUseCases(authService, userRepository);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const users = await userUseCases.getAllUsers();
+      // Filter out current user
+      const filteredUsers = users.filter((u) => u.id !== currentUser?.id);
+      setAllUsers(filteredUsers);
+      setDisplayedUsers(filteredUsers);
+    } catch (error) {
+      console.error("Failed to fetch users", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddFriend = (userId: string) => {
     console.log("Add friend request sent to:", userId);
@@ -62,14 +57,14 @@ function DiscoverScreen() {
   const handleSearch = (text: string) => {
     setSearchQuery(text);
     if (text) {
-      const filtered = MOCK_USERS.filter(
+      const filtered = allUsers.filter(
         (u) =>
           u.username.toLowerCase().includes(text.toLowerCase()) ||
           u.email.toLowerCase().includes(text.toLowerCase())
       );
-      setUsers(filtered);
+      setDisplayedUsers(filtered);
     } else {
-      setUsers(MOCK_USERS);
+      setDisplayedUsers(allUsers);
     }
   };
 
@@ -90,19 +85,25 @@ function DiscoverScreen() {
           onClear={() => handleSearch("")}
         />
       </View>
-      <FlatList
-        data={users}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <UserCard user={item} onAddFriend={handleAddFriend} />
-        )}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            No users found.
-          </Text>
-        }
-      />
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={displayedUsers}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <UserCard user={item} onAddFriend={handleAddFriend} />
+          )}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              No users found.
+            </Text>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -131,6 +132,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
     fontSize: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

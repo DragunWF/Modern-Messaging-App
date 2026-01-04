@@ -77,4 +77,13 @@ export class UserUseCases {
       return null;
     }
   }
+
+  async getAllUsers(): Promise<User[]> {
+    try {
+      return await this.userRepository.getAllUsers();
+    } catch (error) {
+      console.error("Error getting all users:", error);
+      return [];
+    }
+  }
 }
