@@ -288,4 +288,19 @@ export class UserUseCases {
       return [];
     }
   }
+
+  async searchFriendsOfUser(userId: string, query: string): Promise<User[]> {
+    try {
+      const friends = await this.userRepository.getFriendsOfUser(userId);
+      const lowerQuery = query.toLowerCase();
+      return friends.filter(
+        (friend) =>
+          friend.username.toLowerCase().includes(lowerQuery) ||
+          friend.email.toLowerCase().includes(lowerQuery)
+      );
+    } catch (error) {
+      console.error("Error searching friends:", error);
+      return [];
+    }
+  }
 }

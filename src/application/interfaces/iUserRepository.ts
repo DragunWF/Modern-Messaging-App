@@ -7,4 +7,5 @@ export default interface IUserRepository {
   updateUser(user: User): Promise<User>;
   deleteUser(id: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
+  getFriendsOfUser(userId: string): Promise<User[]>;
 }

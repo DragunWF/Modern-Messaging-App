@@ -103,6 +103,25 @@ class UserRepository implements IUserRepository {
       throw error;
     }
   }
+
+  async getFriendsOfUser(userId: string): Promise<User[]> {
+    try {
+      const user = await this.getUserById(userId);
+      if (!user || !user.friends || user.friends.length === 0) {
+        return [];
+      }
+
+      const friendsPromises = user.friends.map((friendId) =>
+        this.getUserById(friendId)
+      );
+      const friends = await Promise.all(friendsPromises);
+
+      return friends.filter((friend): friend is User => friend !== null);
+    } catch (error) {
+      console.error("Error getting friends of user:", error);
+      throw error;
+    }
+  }
 }
 
 export default UserRepository;
