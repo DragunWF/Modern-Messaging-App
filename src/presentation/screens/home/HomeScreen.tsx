@@ -4,6 +4,7 @@ import {
   View,
   Text,
   FlatList,
+  TouchableOpacity, // Added TouchableOpacity
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "../../context/ThemeContext";
@@ -11,6 +12,7 @@ import Header from "../../components/ui/Header";
 import SearchBar from "../../components/ui/SearchBar";
 import FriendListItem from "../../components/user/FriendListItem";
 import User from "../../../domain/entities/user";
+import { Ionicons, AntDesign } from "@expo/vector-icons"; // Added Ionicons
 
 // Define a type for mock friends
 interface MockFriend extends User {
@@ -96,6 +98,11 @@ function HomeScreen() {
     navigation.navigate("Chat", { userId });
   };
 
+  // Placeholder for group chat functionality
+  const handleCreateGroupChatPress = () => {
+    console.log("Create Group Chat button pressed (UI only)");
+  };
+
   return (
     <View
       style={[styles.rootContainer, { backgroundColor: colors.background }]}
@@ -103,20 +110,31 @@ function HomeScreen() {
       <Header title="My Friends" />
 
       <View style={styles.contentContainer}>
-        <View style={styles.searchContainer}>
+        <View style={styles.searchAndCreateGroupContainer}>
           <SearchBar
             placeholder="Search friends..."
             value={searchQuery}
             onChangeText={handleSearch}
             onClear={() => handleSearch("")}
+            style={styles.searchBar} // Added style prop
           />
+          <TouchableOpacity
+            onPress={handleCreateGroupChatPress}
+            style={styles.createGroupButton}
+          >
+            <AntDesign name="usergroup-add" size={24} color={colors.primary} />
+          </TouchableOpacity>
         </View>
 
         <FlatList
           data={displayedFriends}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <FriendListItem user={item} onPress={handleFriendPress} unreadMessageCount={item.unreadMessageCount} />
+            <FriendListItem
+              user={item}
+              onPress={handleFriendPress}
+              unreadMessageCount={item.unreadMessageCount}
+            />
           )}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
@@ -137,9 +155,20 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
   },
-  searchContainer: {
+  searchAndCreateGroupContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 20,
     marginTop: 15,
+    marginBottom: 5, // Adjusted to balance SearchBar's own margin-bottom
+  },
+  searchBar: {
+    flex: 1,
+    marginBottom: 0, // Override SearchBar's default marginBottom
+  },
+  createGroupButton: {
+    marginLeft: 10,
+    padding: 8,
   },
   listContent: {
     paddingHorizontal: 20,
