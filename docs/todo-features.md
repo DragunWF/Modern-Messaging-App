@@ -17,7 +17,7 @@
 - [x] UI layout
 - [x] Search functionality
 - [ ] Group creation feature
-- [ ] Online/offline friend statuses
+- [x] Online/offline friend statuses
 - [ ] Chat unread count
 
 ### Discover Screen
