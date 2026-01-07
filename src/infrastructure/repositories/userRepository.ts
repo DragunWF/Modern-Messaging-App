@@ -8,6 +8,9 @@ import {
   query,
   orderByChild,
   equalTo,
+  onDisconnect,
+  onValue,
+  off,
 } from "firebase/database";
 import { rtdb } from "../database/firebaseConfig";
 import type IUserRepository from "../../application/interfaces/iUserRepository";
@@ -121,6 +124,82 @@ class UserRepository implements IUserRepository {
       console.error("Error getting friends of user:", error);
       throw error;
     }
+  }
+
+  initializePresence(userId: string): void {
+    const connectedRef = ref(rtdb, ".info/connected");
+    const userStatusRef = ref(
+      rtdb,
+      `${UserRepository.collectionName}/${userId}`
+    );
+
+    onValue(connectedRef, (snap) => {
+      if (snap.val() === true) {
+        // When I disconnect, update the status to offline
+        onDisconnect(userStatusRef)
+          .update({ isOnline: false })
+          .then(() => {
+            // We're connected (or reconnected)! Set status to online
+            update(userStatusRef, { isOnline: true });
+          });
+      }
+    });
+  }
+
+  subscribeToFriends(
+    userId: string,
+    callback: (friends: User[]) => void
+  ): () => void {
+    const dbRef = ref(rtdb);
+    let friendListeners: Array<{ ref: any; callback: any }> = [];
+    let isUnsubscribed = false;
+
+    // First, get the user's friend list
+    get(child(dbRef, `${UserRepository.collectionName}/${userId}/friends`))
+      .then((snapshot) => {
+        if (isUnsubscribed) return;
+
+        if (!snapshot.exists()) {
+          callback([]);
+          return;
+        }
+
+        const friendIds = snapshot.val() as string[];
+        if (!friendIds || friendIds.length === 0) {
+          callback([]);
+          return;
+        }
+
+        const friendsMap = new Map<string, User>();
+
+        friendIds.forEach((friendId) => {
+          const friendRef = child(
+            dbRef,
+            `${UserRepository.collectionName}/${friendId}`
+          );
+
+          const onFriendChange = (friendSnap: any) => {
+            if (friendSnap.exists()) {
+              const friendData = friendSnap.val() as User;
+              friendsMap.set(friendId, friendData);
+            } else {
+              friendsMap.delete(friendId);
+            }
+            callback(Array.from(friendsMap.values()));
+          };
+
+          onValue(friendRef, onFriendChange);
+          friendListeners.push({ ref: friendRef, callback: onFriendChange });
+        });
+      })
+      .catch((err) => console.error("Error subscribing to friends", err));
+
+    return () => {
+      isUnsubscribed = true;
+      friendListeners.forEach((listener) => {
+        off(listener.ref, "value", listener.callback);
+      });
+    };
   }
 }
 

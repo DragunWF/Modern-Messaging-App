@@ -60,6 +60,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               USER_STORAGE_KEY,
               JSON.stringify(userProfile)
             );
+            // Initialize Presence
+            userUseCases.initializeUserPresence(firebaseUser.uid);
           } else {
             console.warn(
               "User authenticated in Firebase but profile not found in DB"

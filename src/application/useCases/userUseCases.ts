@@ -65,6 +65,14 @@ export class UserUseCases {
 
   async logoutUser(): Promise<void> {
     try {
+      const uid = this.authService.getCurrentUserId();
+      if (uid) {
+        // Explicitly set offline status before logging out
+        const user = await this.userRepository.getUserById(uid);
+        if (user) {
+          await this.userRepository.updateUser({ ...user, isOnline: false });
+        }
+      }
       await this.authService.logout();
     } catch (error) {
       console.error("Error in logoutUser use case:", error);
@@ -301,6 +309,26 @@ export class UserUseCases {
     } catch (error) {
       console.error("Error searching friends:", error);
       return [];
+    }
+  }
+
+  initializeUserPresence(userId: string): void {
+    try {
+      this.userRepository.initializePresence(userId);
+    } catch (error) {
+      console.error("Error initializing user presence:", error);
+    }
+  }
+
+  subscribeToFriends(
+    userId: string,
+    callback: (friends: User[]) => void
+  ): () => void {
+    try {
+      return this.userRepository.subscribeToFriends(userId, callback);
+    } catch (error) {
+      console.error("Error subscribing to friends:", error);
+      return () => {};
     }
   }
 }
