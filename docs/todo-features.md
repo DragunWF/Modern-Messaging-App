@@ -23,7 +23,7 @@
 
 - [x] UI layout
 - [x] Add friend feature
-- [ ] Search friend feature
+- [x] Search friend feature
 
 ## Notifications Screen
 
@@ -54,4 +54,3 @@
 
 - [x] UI layout
 - [x] User information display
-ß
