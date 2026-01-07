@@ -126,14 +126,20 @@ export class UserUseCases {
       const updatedIncomingRequests = toUser.friendRequests
         ? [...toUser.friendRequests, fromUserId]
         : [fromUserId];
-      const updatedToUser = { ...toUser, friendRequests: updatedIncomingRequests };
+      const updatedToUser = {
+        ...toUser,
+        friendRequests: updatedIncomingRequests,
+      };
       await this.userRepository.updateUser(updatedToUser);
 
       // Add to sender's outgoingFriendRequests list
       const updatedOutgoingRequests = fromUser.outgoingFriendRequests
         ? [...fromUser.outgoingFriendRequests, toUserId]
         : [toUserId];
-      const updatedFromUser = { ...fromUser, outgoingFriendRequests: updatedOutgoingRequests };
+      const updatedFromUser = {
+        ...fromUser,
+        outgoingFriendRequests: updatedOutgoingRequests,
+      };
       await this.userRepository.updateUser(updatedFromUser);
 
       // Create Notification
@@ -264,6 +270,21 @@ export class UserUseCases {
       return await this.notificationRepository.getNotificationsForUser(userId);
     } catch (error) {
       console.error("Error getting notifications:", error);
+      return [];
+    }
+  }
+
+  async searchUsers(query: string): Promise<User[]> {
+    try {
+      const users = await this.userRepository.getAllUsers();
+      const lowerQuery = query.toLowerCase();
+      return users.filter(
+        (user) =>
+          user.username.toLowerCase().includes(lowerQuery) ||
+          user.email.toLowerCase().includes(lowerQuery)
+      );
+    } catch (error) {
+      console.error("Error searching users:", error);
       return [];
     }
   }

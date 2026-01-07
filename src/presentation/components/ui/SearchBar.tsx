@@ -31,7 +31,7 @@ const SearchBar = ({ onClear, style, ...props }: SearchBarProps) => {
         style={styles.icon}
       />
       <TextInput
-        style={[styles.input, { color: colors.text }]}
+        style={[styles.input, { color: colors.textPrimary }]}
         placeholderTextColor={colors.textPlaceholder}
         {...props}
       />
