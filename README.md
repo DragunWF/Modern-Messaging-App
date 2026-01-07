@@ -36,3 +36,8 @@ _Note:_ This requirements document has been modified to cater towards mobile dev
 - [ ] Live deployed application with Expo link
 - [ ] Optional demo video
 - [ ] Submit to Current Head Dev (Maui)
+
+### Documentation
+
+- [`requirements.md`](docs/requirements.md)
+- [`design.md`](docs/design.md)
