@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Text, FlatList } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  FlatList,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "../../context/ThemeContext";
 import Header from "../../components/ui/Header";
@@ -7,8 +12,13 @@ import SearchBar from "../../components/ui/SearchBar";
 import FriendListItem from "../../components/user/FriendListItem";
 import User from "../../../domain/entities/user";
 
+// Define a type for mock friends
+interface MockFriend extends User {
+  unreadMessageCount?: number;
+}
+
 // Mock Data for UI Layout
-const MOCK_FRIENDS: User[] = [
+const MOCK_FRIENDS: MockFriend[] = [
   {
     id: "1",
     username: "Alice Wonderland",
@@ -18,6 +28,7 @@ const MOCK_FRIENDS: User[] = [
     friends: [],
     friendRequests: [],
     outgoingFriendRequests: [],
+    unreadMessageCount: 3,
   },
   {
     id: "2",
@@ -28,6 +39,7 @@ const MOCK_FRIENDS: User[] = [
     friends: [],
     friendRequests: [],
     outgoingFriendRequests: [],
+    unreadMessageCount: 0,
   },
   {
     id: "3",
@@ -48,6 +60,7 @@ const MOCK_FRIENDS: User[] = [
     friends: [],
     friendRequests: [],
     outgoingFriendRequests: [],
+    unreadMessageCount: 15,
   },
   {
     id: "5",
@@ -103,7 +116,7 @@ function HomeScreen() {
           data={displayedFriends}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <FriendListItem user={item} onPress={handleFriendPress} />
+            <FriendListItem user={item} onPress={handleFriendPress} unreadMessageCount={item.unreadMessageCount} />
           )}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={

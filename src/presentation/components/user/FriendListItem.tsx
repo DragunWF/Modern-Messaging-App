@@ -7,9 +7,14 @@ import User from "../../../domain/entities/user";
 interface FriendListItemProps {
   user: User;
   onPress: (userId: string) => void;
+  unreadMessageCount?: number; // New optional prop
 }
 
-const FriendListItem = ({ user, onPress }: FriendListItemProps) => {
+const FriendListItem = ({
+  user,
+  onPress,
+  unreadMessageCount = 0,
+}: FriendListItemProps) => {
   const { colors } = useTheme();
 
   return (
@@ -48,6 +53,14 @@ const FriendListItem = ({ user, onPress }: FriendListItemProps) => {
           {user.isOnline ? "Online" : "Offline"}
         </Text>
       </View>
+
+      {unreadMessageCount > 0 && (
+        <View style={[styles.unreadBadge, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.unreadText, { color: colors.textInverse }]}>
+            {unreadMessageCount}
+          </Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -90,6 +103,19 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
+  },
+  unreadBadge: {
+    minWidth: 24, // Ensures it's circular even for single digits
+    height: 24,
+    borderRadius: 12, // Half of height/width for circular shape
+    paddingHorizontal: 6,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 10, // Space from the info text
+  },
+  unreadText: {
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });
 
