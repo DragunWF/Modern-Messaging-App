@@ -12,7 +12,7 @@
 
 ## Home Screen
 
-- [ ] UI layout
+- [x] UI layout
 - [ ] Search functionality
 - [ ] Group creation feature
 - [ ] Online/offline friend statuses
