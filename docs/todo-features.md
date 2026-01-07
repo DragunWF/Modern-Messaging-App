@@ -1,44 +1,45 @@
 # To Do
 
-## Login Screen
+## Feature Integration
+
+### Login Screen
 
 - [x] UI layout
 - [x] Login integration
 
-## Registration Screen
+### Registration Screen
 
 - [x] UI layout
 - [x] Account registration integration
 
-## Home Screen
+### Home Screen
 
 - [x] UI layout
 - [ ] Search functionality
 - [ ] Group creation feature
 - [ ] Online/offline friend statuses
 - [ ] Chat unread count
-- [ ] Dark/light theme toggle
 
-## Discover Screen
+### Discover Screen
 
 - [x] UI layout
 - [x] Add friend feature
 - [x] Search friend feature
 
-## Notifications Screen
+### Notifications Screen
 
 - [x] UI layout
 - [x] Accept friend request feature
 - [x] Reject friend request feature
 
-## Settings Screen
+### Settings Screen
 
 - [x] UI Layout
 - [x] Dark/light theme toggle
 - [x] Logout functionality
 - [x] Display of user account details
 
-## Chat Screen
+### Chat Screen
 
 - [ ] UI layout
 - [ ] Basic text messaging feature
@@ -50,7 +51,24 @@
 - [ ] Voice messaging feature
 - [ ] Typing indicators
 
-## User Profile
+### User Profile
 
 - [x] UI layout
 - [x] User information display
+
+---
+
+## Documentation
+
+- [ ] `requirements.md`
+  - [ ] Functional & non-functional requirements
+  - [ ] User stories and acceptance criteria
+  - [ ] API specifications
+  - [ ] Database scheme
+  - [ ] Environment variable list
+- [ ] `design.md`
+  - [ ] Wireframes/UI mockups
+  - [ ] Component architecture
+  - [ ] State mangement strategy
+  - [ ] Real-time data flow
+  - [ ] Accessibility and branding guidelines
