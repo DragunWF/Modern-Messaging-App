@@ -8,6 +8,8 @@ import {
   query,
   orderByChild,
   equalTo,
+  onValue,
+  off,
 } from "firebase/database";
 import { rtdb } from "../database/firebaseConfig";
 import type IMessageRepository from "../../application/interfaces/iMessageRepository";
@@ -115,5 +117,25 @@ export default class MessageRepository implements IMessageRepository {
       console.error("Error getting messages by user ID:", error);
       throw error;
     }
+  }
+
+  subscribeToMessages(callback: (messages: Message[]) => void): () => void {
+    const messagesRef = ref(rtdb, MessageRepository.collectionName);
+
+    const onValueChange = (snapshot: any) => {
+      const messages: Message[] = [];
+      if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot: any) => {
+          messages.push(childSnapshot.val());
+        });
+      }
+      callback(messages);
+    };
+
+    onValue(messagesRef, onValueChange);
+
+    return () => {
+      off(messagesRef, "value", onValueChange);
+    };
   }
 }

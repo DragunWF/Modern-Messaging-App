@@ -42,10 +42,7 @@ export class ChatUseCases {
     );
   }
 
-  async createGroupChat(
-    name: string,
-    memberIds: string[]
-  ): Promise<GroupChat> {
+  async createGroupChat(name: string, memberIds: string[]): Promise<GroupChat> {
     const newGroupChat: GroupChat = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       name,
@@ -56,5 +53,34 @@ export class ChatUseCases {
 
   async getUserGroupChats(userId: string): Promise<GroupChat[]> {
     return await this.groupChatRepository.getGroupChatsByMemberId(userId);
+  }
+
+  subscribeToMessages(
+    currentUserId: string,
+    otherId: string, // Can be userId or groupId
+    isGroup: boolean,
+    callback: (messages: Message[]) => void
+  ): () => void {
+    return this.messageRepository.subscribeToMessages((allMessages) => {
+      const filteredMessages = allMessages
+        .filter((m) => {
+          if (isGroup) {
+            // In group chat, receiverId is the groupId
+            return m.receiverId === otherId;
+          } else {
+            // In 1-on-1 chat, match sender/receiver pair
+            return (
+              (m.senderId === currentUserId && m.receiverId === otherId) ||
+              (m.senderId === otherId && m.receiverId === currentUserId)
+            );
+          }
+        })
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        ); // Sort newest first for inverted list
+
+      callback(filteredMessages);
+    });
   }
 }
