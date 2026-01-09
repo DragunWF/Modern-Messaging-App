@@ -6,7 +6,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  Text, // Import Text for the typing indicator
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { useTheme } from "../../context/ThemeContext";
@@ -15,6 +14,7 @@ import { useService } from "../../context/ServiceContext";
 import ChatHeader from "../../components/chat/ChatHeader";
 import MessageBubble from "../../components/chat/MessageBubble";
 import ChatInput from "../../components/chat/ChatInput";
+import TypingIndicator from "../../components/chat/TypingIndicator";
 import Message from "../../../domain/entities/message";
 import User from "../../../domain/entities/user";
 import GroupChat from "../../../domain/entities/groupChat";
@@ -158,11 +158,10 @@ function ChatScreen() {
   let typingIndicatorText = "";
   if (typingUsers.length > 0) {
     if (isGroup) {
-      typingIndicatorText = "Someone is typing...";
+      typingIndicatorText = "Someone is typing"; // Removed "..." as component adds dots
     } else {
-      // 1-on-1: "Name is typing..."
-      // For 1-on-1, typingUsers will only contain the other user's ID
-      typingIndicatorText = `${chatPartner?.username || "User"} is typing...`;
+      // 1-on-1: "Name is typing"
+      typingIndicatorText = `${chatPartner?.username || "User"} is typing`;
     }
   }
 
@@ -204,18 +203,7 @@ function ChatScreen() {
           inverted
         />
 
-        {typingIndicatorText.length > 0 && (
-          <View style={styles.typingIndicatorContainer}>
-            <Text
-              style={[
-                styles.typingIndicatorText,
-                { color: colors.textSecondary },
-              ]}
-            >
-              {typingIndicatorText}
-            </Text>
-          </View>
-        )}
+        <TypingIndicator text={typingIndicatorText} />
 
         <ChatInput onSend={handleSend} onTyping={handleTyping} />
       </KeyboardAvoidingView>
@@ -233,15 +221,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingVertical: 10,
     paddingHorizontal: 5,
-  },
-  typingIndicatorContainer: {
-    paddingHorizontal: 15,
-    paddingBottom: 5,
-    marginBottom: 6,
-    alignItems: "flex-start",
-  },
-  typingIndicatorText: {
-    fontSize: 12,
   },
 });
 
