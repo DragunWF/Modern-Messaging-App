@@ -122,6 +122,7 @@ function DiscoverScreen() {
               isRequestPending={
                 !!fullCurrentUser?.outgoingFriendRequests?.includes(item.id)
               }
+              isFriend={!!fullCurrentUser?.friends?.includes(item.id)}
             />
           )}
           contentContainerStyle={styles.listContent}
