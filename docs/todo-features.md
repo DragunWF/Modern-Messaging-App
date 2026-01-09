@@ -19,7 +19,7 @@
 - [x] Group creation feature
   - [x] Group creation form UI layout
   - [x] Group creation integration
-  - [ ] Group chat UI layout
+  - [x] Group chat UI layout
 - [x] Online/offline friend statuses
 - [x] Chat unread count
 
@@ -44,7 +44,7 @@
 
 ### Chat Screen
 
-- [ ] UI layout
+- [x] UI layout
 - [ ] Basic text messaging feature
 - [ ] Message forwarding feature
 - [ ] Message replies feature
