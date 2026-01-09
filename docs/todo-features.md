@@ -19,9 +19,9 @@
 - [x] Group creation feature
   - [x] Group creation form UI layout
   - [x] Group creation integration
-  - [ ] Group creation chat UI layout
+  - [ ] Group chat UI layout
 - [x] Online/offline friend statuses
-- [ ] Chat unread count
+- [x] Chat unread count
 
 ### Discover Screen
 
