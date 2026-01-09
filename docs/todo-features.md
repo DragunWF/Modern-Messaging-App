@@ -16,7 +16,10 @@
 
 - [x] UI layout
 - [x] Search functionality
-- [ ] Group creation feature
+- [x] Group creation feature
+  - [x] Group creation form UI layout
+  - [x] Group creation integration
+  - [ ] Group creation chat UI layout
 - [x] Online/offline friend statuses
 - [ ] Chat unread count
 
