@@ -7,10 +7,16 @@ import User from "../../../domain/entities/user";
 interface UserCardProps {
   user: User;
   onAddFriend: (userId: string) => void;
-  isRequestPending: boolean; // New prop
+  isRequestPending: boolean;
+  isFriend: boolean;
 }
 
-const UserCard = ({ user, onAddFriend, isRequestPending }: UserCardProps) => {
+const UserCard = ({
+  user,
+  onAddFriend,
+  isRequestPending,
+  isFriend,
+}: UserCardProps) => {
   const { colors } = useTheme();
 
   return (
@@ -35,16 +41,27 @@ const UserCard = ({ user, onAddFriend, isRequestPending }: UserCardProps) => {
         style={[
           styles.addButton,
           {
-            backgroundColor: isRequestPending ? colors.border : colors.primary,
+            backgroundColor:
+              isRequestPending || isFriend ? colors.border : colors.primary,
           },
         ]}
         onPress={() => onAddFriend(user.id)}
-        disabled={isRequestPending}
+        disabled={isRequestPending || isFriend}
       >
         <Ionicons
-          name={isRequestPending ? "hourglass-outline" : "person-add"}
+          name={
+            isFriend
+              ? "people"
+              : isRequestPending
+              ? "hourglass-outline"
+              : "person-add"
+          }
           size={20}
-          color={isRequestPending ? colors.textSecondary : colors.textInverse}
+          color={
+            isRequestPending || isFriend
+              ? colors.textSecondary
+              : colors.textInverse
+          }
         />
       </TouchableOpacity>
     </View>

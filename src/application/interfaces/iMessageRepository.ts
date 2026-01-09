@@ -6,4 +6,12 @@ export default interface IMessageRepository {
   updateMessage(message: Message): Promise<Message>;
   deleteMessage(id: string): Promise<void>;
   getMessagesByUserId(userId: string): Promise<Message[]>;
+  subscribeToMessages(
+    callback: (messages: Message[]) => void
+  ): () => void;
+  setTypingStatus(chatId: string, userId: string, isTyping: boolean): Promise<void>;
+  subscribeToTypingStatus(
+    chatId: string,
+    callback: (typingUserIds: string[]) => void
+  ): () => void;
 }

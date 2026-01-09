@@ -7,4 +7,11 @@ export default interface IUserRepository {
   updateUser(user: User): Promise<User>;
   deleteUser(id: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
+  getFriendsOfUser(userId: string): Promise<User[]>;
+  
+  // Real-time Presence & Updates
+  initializePresence(userId: string): void;
+  subscribeToFriends(userId: string, callback: (friends: User[]) => void): () => void;
+  subscribeToUser(userId: string, callback: (user: User | null) => void): () => void;
+  updateLastRead(userId: string, chatId: string, timestamp: number): Promise<void>;
 }

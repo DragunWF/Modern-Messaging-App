@@ -75,15 +75,16 @@ function DiscoverScreen() {
     }
   };
 
-  const handleSearch = (text: string) => {
+  const handleSearch = async (text: string) => {
     setSearchQuery(text);
     if (text) {
-      const filtered = allUsers.filter(
-        (u) =>
-          u.username.toLowerCase().includes(text.toLowerCase()) ||
-          u.email.toLowerCase().includes(text.toLowerCase())
-      );
-      setDisplayedUsers(filtered);
+      try {
+        const foundUsers = await userUseCases.searchUsers(text);
+        const filtered = foundUsers.filter((u) => u.id !== authUser?.id);
+        setDisplayedUsers(filtered);
+      } catch (error) {
+        console.error("Search failed", error);
+      }
     } else {
       setDisplayedUsers(allUsers);
     }
@@ -121,6 +122,7 @@ function DiscoverScreen() {
               isRequestPending={
                 !!fullCurrentUser?.outgoingFriendRequests?.includes(item.id)
               }
+              isFriend={!!fullCurrentUser?.friends?.includes(item.id)}
             />
           )}
           contentContainerStyle={styles.listContent}

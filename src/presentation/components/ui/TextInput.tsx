@@ -16,6 +16,7 @@ const TextInput = (props: TextInputProps) => {
         {
           backgroundColor: colors.backgroundInput,
           color: colors.textPrimary,
+          borderColor: colors.border, // Add border color
         },
         props.style,
       ]}
@@ -37,6 +38,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 1.41,
     elevation: 1,
+    borderWidth: 1, // Add border width
   },
 });
 

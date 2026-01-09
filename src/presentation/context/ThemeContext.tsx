@@ -28,7 +28,7 @@ const THEME_STORAGE_KEY = "@user_theme";
 
 // Theme provider component
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [currentTheme, setCurrentTheme] = useState<"light" | "dark">("light"); // Default to light
+  const [currentTheme, setCurrentTheme] = useState<"light" | "dark">("dark");
 
   // Load theme from AsyncStorage on app start
   useEffect(() => {

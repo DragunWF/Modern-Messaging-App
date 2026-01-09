@@ -8,6 +8,9 @@ import {
   query,
   orderByChild,
   equalTo,
+  onDisconnect,
+  onValue,
+  off,
 } from "firebase/database";
 import { rtdb } from "../database/firebaseConfig";
 import type IUserRepository from "../../application/interfaces/iUserRepository";
@@ -102,6 +105,151 @@ class UserRepository implements IUserRepository {
       console.error("Error getting all users:", error);
       throw error;
     }
+  }
+
+  async getFriendsOfUser(userId: string): Promise<User[]> {
+    try {
+      const user = await this.getUserById(userId);
+      if (!user || !user.friends || user.friends.length === 0) {
+        return [];
+      }
+
+      const friendsPromises = user.friends.map((friendId) =>
+        this.getUserById(friendId)
+      );
+      const friends = await Promise.all(friendsPromises);
+
+      return friends.filter((friend): friend is User => friend !== null);
+    } catch (error) {
+      console.error("Error getting friends of user:", error);
+      throw error;
+    }
+  }
+
+  initializePresence(userId: string): void {
+    const connectedRef = ref(rtdb, ".info/connected");
+    const userStatusRef = ref(
+      rtdb,
+      `${UserRepository.collectionName}/${userId}`
+    );
+
+    onValue(connectedRef, (snap) => {
+      if (snap.val() === true) {
+        // When I disconnect, update the status to offline
+        onDisconnect(userStatusRef)
+          .update({ isOnline: false })
+          .then(() => {
+            // We're connected (or reconnected)! Set status to online
+            update(userStatusRef, { isOnline: true });
+          });
+      }
+    });
+  }
+
+  subscribeToFriends(
+    userId: string,
+    callback: (friends: User[]) => void
+  ): () => void {
+    const dbRef = ref(rtdb);
+    const userFriendsRef = child(
+      dbRef,
+      `${UserRepository.collectionName}/${userId}/friends`
+    );
+
+    // Store active listeners for each friend so we can unsubscribe individually
+    const friendListeners = new Map<string, { ref: any; callback: any }>();
+    const friendsMap = new Map<string, User>();
+
+    const onFriendsListChange = (snapshot: any) => {
+      const currentFriendIds: string[] = snapshot.exists()
+        ? (snapshot.val() as string[])
+        : [];
+
+      // 1. Identify friends to remove (present in listeners but not in new list)
+      for (const [friendId, listener] of friendListeners) {
+        if (!currentFriendIds.includes(friendId)) {
+          off(listener.ref, "value", listener.callback);
+          friendListeners.delete(friendId);
+          friendsMap.delete(friendId);
+        }
+      }
+
+      // 2. Identify new friends to add (present in new list but not in listeners)
+      currentFriendIds.forEach((friendId) => {
+        if (!friendListeners.has(friendId)) {
+          const friendRef = child(
+            dbRef,
+            `${UserRepository.collectionName}/${friendId}`
+          );
+
+          const onFriendChange = (friendSnap: any) => {
+            if (friendSnap.exists()) {
+              const friendData = friendSnap.val() as User;
+              friendsMap.set(friendId, friendData);
+            } else {
+              friendsMap.delete(friendId);
+            }
+            // Emit updated list whenever any friend's data changes
+            callback(Array.from(friendsMap.values()));
+          };
+
+          onValue(friendRef, onFriendChange);
+          friendListeners.set(friendId, {
+            ref: friendRef,
+            callback: onFriendChange,
+          });
+        }
+      });
+
+      // If list is empty, clear everything and emit empty array
+      if (currentFriendIds.length === 0) {
+        callback([]);
+      }
+    };
+
+    // Listen to the user's "friends" array for additions/removals
+    onValue(userFriendsRef, onFriendsListChange);
+
+    // Return unsubscriber
+    return () => {
+      off(userFriendsRef, "value", onFriendsListChange);
+      for (const listener of friendListeners.values()) {
+        off(listener.ref, "value", listener.callback);
+      }
+    };
+  }
+
+  subscribeToUser(
+    userId: string,
+    callback: (user: User | null) => void
+  ): () => void {
+    const userRef = ref(rtdb, `${UserRepository.collectionName}/${userId}`);
+
+    const onUserChange = (snapshot: any) => {
+      if (snapshot.exists()) {
+        callback(snapshot.val() as User);
+      } else {
+        callback(null);
+      }
+    };
+
+    onValue(userRef, onUserChange);
+
+    return () => {
+      off(userRef, "value", onUserChange);
+    };
+  }
+
+  async updateLastRead(
+    userId: string,
+    chatId: string,
+    timestamp: number
+  ): Promise<void> {
+    const updates: any = {};
+    updates[
+      `/${UserRepository.collectionName}/${userId}/lastReadTimestamps/${chatId}`
+    ] = timestamp;
+    await update(ref(rtdb), updates);
   }
 }
 

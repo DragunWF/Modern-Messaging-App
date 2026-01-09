@@ -8,6 +8,9 @@ import {
   query,
   orderByChild,
   equalTo,
+  onValue,
+  off,
+  onDisconnect,
 } from "firebase/database";
 import { rtdb } from "../database/firebaseConfig";
 import type IMessageRepository from "../../application/interfaces/iMessageRepository";
@@ -107,13 +110,74 @@ export default class MessageRepository implements IMessageRepository {
       );
 
       // Sort by timestamp
-      return uniqueMessages.sort(
-        (a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      );
+      return uniqueMessages.sort((a, b) => {
+        const timeA = new Date(a.timestamp).getTime();
+        const timeB = new Date(b.timestamp).getTime();
+        return timeA - timeB;
+      });
     } catch (error) {
       console.error("Error getting messages by user ID:", error);
       throw error;
     }
+  }
+
+  subscribeToMessages(callback: (messages: Message[]) => void): () => void {
+    const messagesRef = ref(rtdb, MessageRepository.collectionName);
+
+    const onValueChange = (snapshot: any) => {
+      const messages: Message[] = [];
+      if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot: any) => {
+          messages.push(childSnapshot.val());
+        });
+      }
+      callback(messages);
+    };
+
+    onValue(messagesRef, onValueChange);
+
+    return () => {
+      off(messagesRef, "value", onValueChange);
+    };
+  }
+
+  async setTypingStatus(
+    chatId: string,
+    userId: string,
+    isTyping: boolean
+  ): Promise<void> {
+    const typingRef = ref(rtdb, `typingStatus/${chatId}/${userId}`);
+    if (isTyping) {
+      await set(typingRef, true);
+      // Optional: Auto-remove on disconnect so it doesn't get stuck if app crashes
+      onDisconnect(typingRef).remove();
+    } else {
+      await remove(typingRef);
+      onDisconnect(typingRef).cancel();
+    }
+  }
+
+  subscribeToTypingStatus(
+    chatId: string,
+    callback: (typingUserIds: string[]) => void
+  ): () => void {
+    const typingRef = ref(rtdb, `typingStatus/${chatId}`);
+
+    const onValueChange = (snapshot: any) => {
+      if (snapshot.exists()) {
+        const typingData = snapshot.val();
+        // Returns an array of userIds who are currently typing (keys where value is true)
+        const typingUserIds = Object.keys(typingData);
+        callback(typingUserIds);
+      } else {
+        callback([]);
+      }
+    };
+
+    onValue(typingRef, onValueChange);
+
+    return () => {
+      off(typingRef, "value", onValueChange);
+    };
   }
 }

@@ -1,4 +1,13 @@
-import { ref, get, set, child, update, remove } from "firebase/database";
+import {
+  ref,
+  get,
+  set,
+  child,
+  update,
+  remove,
+  onValue,
+  off,
+} from "firebase/database";
 import { rtdb } from "../database/firebaseConfig";
 import type IGroupChatRepository from "../../application/interfaces/iGroupChatRepository";
 import type GroupChat from "../../domain/entities/groupChat";
@@ -76,5 +85,32 @@ export default class GroupChatRepository implements IGroupChatRepository {
       console.error("Error getting group chats by member ID:", error);
       throw error;
     }
+  }
+
+  subscribeToGroupChats(
+    memberId: string,
+    callback: (groupChats: GroupChat[]) => void
+  ): () => void {
+    const dbRef = ref(rtdb, GroupChatRepository.collectionName);
+
+    const onValueChange = (snapshot: any) => {
+      if (snapshot.exists()) {
+        const allGroups = Object.values(
+          snapshot.val() as Record<string, GroupChat>
+        );
+        const userGroups = allGroups.filter(
+          (group) => group.memberIds && group.memberIds.includes(memberId)
+        );
+        callback(userGroups);
+      } else {
+        callback([]);
+      }
+    };
+
+    onValue(dbRef, onValueChange);
+
+    return () => {
+      off(dbRef, "value", onValueChange);
+    };
   }
 }

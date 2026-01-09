@@ -65,6 +65,14 @@ export class UserUseCases {
 
   async logoutUser(): Promise<void> {
     try {
+      const uid = this.authService.getCurrentUserId();
+      if (uid) {
+        // Explicitly set offline status before logging out
+        const user = await this.userRepository.getUserById(uid);
+        if (user) {
+          await this.userRepository.updateUser({ ...user, isOnline: false });
+        }
+      }
       await this.authService.logout();
     } catch (error) {
       console.error("Error in logoutUser use case:", error);
@@ -126,14 +134,20 @@ export class UserUseCases {
       const updatedIncomingRequests = toUser.friendRequests
         ? [...toUser.friendRequests, fromUserId]
         : [fromUserId];
-      const updatedToUser = { ...toUser, friendRequests: updatedIncomingRequests };
+      const updatedToUser = {
+        ...toUser,
+        friendRequests: updatedIncomingRequests,
+      };
       await this.userRepository.updateUser(updatedToUser);
 
       // Add to sender's outgoingFriendRequests list
       const updatedOutgoingRequests = fromUser.outgoingFriendRequests
         ? [...fromUser.outgoingFriendRequests, toUserId]
         : [toUserId];
-      const updatedFromUser = { ...fromUser, outgoingFriendRequests: updatedOutgoingRequests };
+      const updatedFromUser = {
+        ...fromUser,
+        outgoingFriendRequests: updatedOutgoingRequests,
+      };
       await this.userRepository.updateUser(updatedFromUser);
 
       // Create Notification
@@ -265,6 +279,68 @@ export class UserUseCases {
     } catch (error) {
       console.error("Error getting notifications:", error);
       return [];
+    }
+  }
+
+  async searchUsers(query: string): Promise<User[]> {
+    try {
+      const users = await this.userRepository.getAllUsers();
+      const lowerQuery = query.toLowerCase();
+      return users.filter(
+        (user) =>
+          user.username.toLowerCase().includes(lowerQuery) ||
+          user.email.toLowerCase().includes(lowerQuery)
+      );
+    } catch (error) {
+      console.error("Error searching users:", error);
+      return [];
+    }
+  }
+
+  async searchFriendsOfUser(userId: string, query: string): Promise<User[]> {
+    try {
+      const friends = await this.userRepository.getFriendsOfUser(userId);
+      const lowerQuery = query.toLowerCase();
+      return friends.filter(
+        (friend) =>
+          friend.username.toLowerCase().includes(lowerQuery) ||
+          friend.email.toLowerCase().includes(lowerQuery)
+      );
+    } catch (error) {
+      console.error("Error searching friends:", error);
+      return [];
+    }
+  }
+
+  initializeUserPresence(userId: string): void {
+    try {
+      this.userRepository.initializePresence(userId);
+    } catch (error) {
+      console.error("Error initializing user presence:", error);
+    }
+  }
+
+  subscribeToFriends(
+    userId: string,
+    callback: (friends: User[]) => void
+  ): () => void {
+    try {
+      return this.userRepository.subscribeToFriends(userId, callback);
+    } catch (error) {
+      console.error("Error subscribing to friends:", error);
+      return () => {};
+    }
+  }
+
+  subscribeToUser(
+    userId: string,
+    callback: (user: User | null) => void
+  ): () => void {
+    try {
+      return this.userRepository.subscribeToUser(userId, callback);
+    } catch (error) {
+      console.error("Error subscribing to user:", error);
+      return () => {};
     }
   }
 }
