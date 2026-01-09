@@ -1,12 +1,4 @@
-import {
-  ref,
-  set,
-  push,
-  get,
-  update,
-  remove,
-  child,
-} from "firebase/database";
+import { ref, set, push, get, update, remove, child } from "firebase/database";
 import { rtdb } from "../database/firebaseConfig";
 import Notification from "../../domain/entities/notification";
 import INotificationRepository from "../../application/interfaces/iNotificationRepository";
@@ -64,7 +56,10 @@ export default class NotificationRepository implements INotificationRepository {
     }
   }
 
-  async deleteNotification(userId: string, notificationId: string): Promise<void> {
+  async deleteNotification(
+    userId: string,
+    notificationId: string
+  ): Promise<void> {
     try {
       const dbRef = ref(
         rtdb,
