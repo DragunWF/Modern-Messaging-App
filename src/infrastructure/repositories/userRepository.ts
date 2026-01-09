@@ -218,6 +218,39 @@ class UserRepository implements IUserRepository {
       }
     };
   }
+
+  subscribeToUser(
+    userId: string,
+    callback: (user: User | null) => void
+  ): () => void {
+    const userRef = ref(rtdb, `${UserRepository.collectionName}/${userId}`);
+
+    const onUserChange = (snapshot: any) => {
+      if (snapshot.exists()) {
+        callback(snapshot.val() as User);
+      } else {
+        callback(null);
+      }
+    };
+
+    onValue(userRef, onUserChange);
+
+    return () => {
+      off(userRef, "value", onUserChange);
+    };
+  }
+
+  async updateLastRead(
+    userId: string,
+    chatId: string,
+    timestamp: number
+  ): Promise<void> {
+    const updates: any = {};
+    updates[
+      `/${UserRepository.collectionName}/${userId}/lastReadTimestamps/${chatId}`
+    ] = timestamp;
+    await update(ref(rtdb), updates);
+  }
 }
 
 export default UserRepository;

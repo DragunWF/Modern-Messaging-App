@@ -4,7 +4,7 @@ export default interface Message {
   senderId: string;
   receiverId: string;
   content: string;
-  timestamp: Date;
+  timestamp: number;
 
   // Additional attributes
   reactions: Record<string, number>; // e.g., { "like": 3, "love": 1 }

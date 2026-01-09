@@ -1,12 +1,14 @@
 import IMessageRepository from "../interfaces/iMessageRepository";
 import IGroupChatRepository from "../interfaces/iGroupChatRepository";
+import IUserRepository from "../interfaces/iUserRepository";
 import Message from "../../domain/entities/message";
 import GroupChat from "../../domain/entities/groupChat";
 
 export class ChatUseCases {
   constructor(
     private messageRepository: IMessageRepository,
-    private groupChatRepository: IGroupChatRepository
+    private groupChatRepository: IGroupChatRepository,
+    private userRepository: IUserRepository
   ) {}
 
   async sendMessage(
@@ -19,7 +21,7 @@ export class ChatUseCases {
       senderId,
       receiverId,
       content,
-      timestamp: new Date(),
+      timestamp: Date.now(),
       isRead: false,
       isDeleted: false,
       isForwarded: false,
@@ -75,12 +77,22 @@ export class ChatUseCases {
             );
           }
         })
-        .sort(
-          (a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        ); // Sort newest first for inverted list
+        .sort((a, b) => {
+          const timeA = new Date(a.timestamp).getTime();
+          const timeB = new Date(b.timestamp).getTime();
+          return timeB - timeA;
+        }); // Sort newest first for inverted list
 
       callback(filteredMessages);
+    });
+  }
+
+  // New method to subscribe to ALL messages relevant to the user (for unread counts)
+  subscribeToAllMessages(callback: (messages: Message[]) => void): () => void {
+    return this.messageRepository.subscribeToMessages((allMessages) => {
+      // We pass all messages to the UI, allowing it to filter efficiently based on its state (friends/groups)
+      // This avoids complex filtering logic here that depends on changing user groups
+      callback(allMessages);
     });
   }
 
@@ -97,6 +109,19 @@ export class ChatUseCases {
         ? `${currentUserId}_${otherId}`
         : `${otherId}_${currentUserId}`;
     }
+  }
+
+  async markChatAsRead(
+    currentUserId: string,
+    otherId: string,
+    isGroup: boolean
+  ): Promise<void> {
+    const chatId = this.getChatId(currentUserId, otherId, isGroup);
+    await this.userRepository.updateLastRead(
+      currentUserId,
+      chatId,
+      new Date().getTime()
+    );
   }
 
   async sendTypingStatus(

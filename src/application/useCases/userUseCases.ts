@@ -331,4 +331,16 @@ export class UserUseCases {
       return () => {};
     }
   }
+
+  subscribeToUser(
+    userId: string,
+    callback: (user: User | null) => void
+  ): () => void {
+    try {
+      return this.userRepository.subscribeToUser(userId, callback);
+    } catch (error) {
+      console.error("Error subscribing to user:", error);
+      return () => {};
+    }
+  }
 }

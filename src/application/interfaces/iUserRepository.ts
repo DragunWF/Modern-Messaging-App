@@ -12,4 +12,6 @@ export default interface IUserRepository {
   // Real-time Presence & Updates
   initializePresence(userId: string): void;
   subscribeToFriends(userId: string, callback: (friends: User[]) => void): () => void;
+  subscribeToUser(userId: string, callback: (user: User | null) => void): () => void;
+  updateLastRead(userId: string, chatId: string, timestamp: number): Promise<void>;
 }

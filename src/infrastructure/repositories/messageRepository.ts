@@ -110,10 +110,11 @@ export default class MessageRepository implements IMessageRepository {
       );
 
       // Sort by timestamp
-      return uniqueMessages.sort(
-        (a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      );
+      return uniqueMessages.sort((a, b) => {
+        const timeA = new Date(a.timestamp).getTime();
+        const timeB = new Date(b.timestamp).getTime();
+        return timeA - timeB;
+      });
     } catch (error) {
       console.error("Error getting messages by user ID:", error);
       throw error;

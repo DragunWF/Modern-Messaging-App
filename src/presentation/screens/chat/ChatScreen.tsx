@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -7,7 +7,11 @@ import {
   Platform,
   SafeAreaView,
 } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import {
+  useRoute,
+  useNavigation,
+  useFocusEffect,
+} from "@react-navigation/native";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
 import { useService } from "../../context/ServiceContext";
@@ -74,7 +78,6 @@ function ChatScreen() {
       otherId,
       isGroup,
       (newMessages) => {
-        newMessages.reverse(); // User's preference
         setMessages(newMessages);
       }
     );
@@ -99,6 +102,16 @@ function ChatScreen() {
 
     return () => unsubscribe();
   }, [authUser?.id, userId, groupId, isGroup]);
+
+  // Mark as read on focus
+  useFocusEffect(
+    useCallback(() => {
+      const otherId = isGroup ? groupId : userId;
+      if (authUser?.id && otherId) {
+        chatUseCases.markChatAsRead(authUser.id, otherId, isGroup);
+      }
+    }, [authUser?.id, userId, groupId, isGroup])
+  );
 
   // Resolve Sender Name Logic
   const resolveSenderName = (senderId: string) => {
@@ -165,9 +178,9 @@ function ChatScreen() {
     }
   }
 
-  const formatTime = (dateObj: Date | string) => {
-    if (!dateObj) return "";
-    const d = new Date(dateObj);
+  const formatTime = (timestamp: number) => {
+    if (!timestamp) return "";
+    const d = new Date(timestamp);
     if (isNaN(d.getTime())) return ""; // Handle invalid dates gracefully
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };

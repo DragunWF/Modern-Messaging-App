@@ -7,9 +7,14 @@ import GroupChat from "../../../domain/entities/groupChat";
 interface GroupListItemProps {
   groupChat: GroupChat;
   onPress: (groupId: string) => void;
+  unreadMessageCount?: number;
 }
 
-const GroupListItem = ({ groupChat, onPress }: GroupListItemProps) => {
+const GroupListItem = ({
+  groupChat,
+  onPress,
+  unreadMessageCount = 0,
+}: GroupListItemProps) => {
   const { colors } = useTheme();
 
   return (
@@ -21,8 +26,13 @@ const GroupListItem = ({ groupChat, onPress }: GroupListItemProps) => {
       onPress={() => onPress(groupChat.id)}
     >
       <View style={styles.avatarContainer}>
-        <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primarySoft }]}>
-            <MaterialIcons name="groups" size={30} color={colors.primary} />
+        <View
+          style={[
+            styles.avatarPlaceholder,
+            { backgroundColor: colors.primarySoft },
+          ]}
+        >
+          <MaterialIcons name="groups" size={30} color={colors.primary} />
         </View>
       </View>
       <View style={styles.info}>
@@ -33,6 +43,13 @@ const GroupListItem = ({ groupChat, onPress }: GroupListItemProps) => {
           {groupChat.memberIds?.length || 0} members
         </Text>
       </View>
+      {unreadMessageCount > 0 && (
+        <View style={[styles.unreadBadge, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.unreadText, { color: colors.textInverse }]}>
+            {unreadMessageCount}
+          </Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -55,11 +72,11 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   avatarPlaceholder: {
-      width: 50,
-      height: 50,
-      borderRadius: 25,
-      justifyContent: 'center',
-      alignItems: 'center',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
   },
   info: {
     flex: 1,
@@ -71,6 +88,19 @@ const styles = StyleSheet.create({
   },
   memberCount: {
     fontSize: 12,
+  },
+  unreadBadge: {
+    minWidth: 24, // Ensures it's circular even for single digits
+    height: 24,
+    borderRadius: 12, // Half of height/width for circular shape
+    paddingHorizontal: 6,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 10, // Space from the info text
+  },
+  unreadText: {
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });
 

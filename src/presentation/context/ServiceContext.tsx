@@ -31,10 +31,11 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     notificationRepository
   );
   
-  const chatUseCases = new ChatUseCases(
-    messageRepository,
-    groupChatRepository
-  );
+    const chatUseCases = new ChatUseCases(
+      messageRepository,
+      groupChatRepository,
+      userRepository
+    );
 
   const groupChatUseCases = new GroupChatUseCases(groupChatRepository);
 
