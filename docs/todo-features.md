@@ -52,7 +52,7 @@
 - [ ] Image messaging feature
 - [ ] File messaging feature
 - [ ] Voice messaging feature
-- [ ] Typing indicators
+- [x] Typing indicators
 
 ### User Profile
 
