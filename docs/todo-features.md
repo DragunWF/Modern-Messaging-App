@@ -45,7 +45,7 @@
 ### Chat Screen
 
 - [x] UI layout
-- [ ] Basic text messaging feature
+- [x] Basic text messaging feature
 - [ ] Message forwarding feature
 - [ ] Message replies feature
 - [ ] Message reactions feature
