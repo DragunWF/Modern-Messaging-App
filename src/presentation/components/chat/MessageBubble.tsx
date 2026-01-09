@@ -48,7 +48,7 @@ const MessageBubble = ({
             { color: isMe ? colors.textInverse : colors.textPrimary },
           ]}
         >
-          {text}
+          {text.trim()}
         </Text>
       </View>
       <Text style={[styles.timestamp, { color: colors.textSecondary }]}>
