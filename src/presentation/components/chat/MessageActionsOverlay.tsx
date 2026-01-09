@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Share, ViewStyle } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Share, ViewStyle, Alert } from "react-native";
 import { useTheme } from "../../context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from 'expo-clipboard';
 
 interface MessageActionsOverlayProps {
   messageText: string;
@@ -22,11 +23,9 @@ const MessageActionsOverlay = ({
 }: MessageActionsOverlayProps) => {
   const { colors } = useTheme();
 
-  const handleCopy = () => {
-    // In React Native, Clipboard module is usually used.
-    // For this prototype, we'll use a simple alert as a placeholder.
-    // In a real app, use `Clipboard.setString(messageText);`
-    alert("Message copied: " + messageText);
+  const handleCopy = async () => {
+    await Clipboard.setStringAsync(messageText);
+    Alert.alert("Success", "Message copied to clipboard!");
     onClose();
   };
 
@@ -38,7 +37,7 @@ const MessageActionsOverlay = ({
         message: messageText,
       });
     } catch (error: any) {
-      alert(error.message);
+      // alert(error.message);
     } finally {
       onClose();
     }

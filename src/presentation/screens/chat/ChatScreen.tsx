@@ -220,7 +220,7 @@ function ChatScreen() {
   const handleSelectReaction = useCallback(
     async (emoji: string) => {
       if (!selectedMessage?.message || !authUser?.id) return;
-      
+
       try {
         await chatUseCases.toggleReaction(
           selectedMessage.message.id,
@@ -230,7 +230,7 @@ function ChatScreen() {
       } catch (error) {
         console.error("Failed to toggle reaction", error);
       }
-      
+
       handleCloseOverlay();
     },
     [selectedMessage?.message, authUser?.id, handleCloseOverlay]
@@ -247,14 +247,6 @@ function ChatScreen() {
     if (!selectedMessage?.message) return;
     console.log(`Forward message: ${selectedMessage.message.id}`);
     // TODO: Implement forward feature
-    handleCloseOverlay();
-  }, [selectedMessage?.message, handleCloseOverlay]);
-
-  const handleCopy = useCallback(() => {
-    if (!selectedMessage?.message) return;
-    console.log(`Copy message text: ${selectedMessage.message.content}`);
-    // TODO: Implement copy feature
-    // For now, MessageActionsOverlay handles its own copy logic
     handleCloseOverlay();
   }, [selectedMessage?.message, handleCloseOverlay]);
 
