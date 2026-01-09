@@ -151,28 +151,32 @@ class UserRepository implements IUserRepository {
     callback: (friends: User[]) => void
   ): () => void {
     const dbRef = ref(rtdb);
-    let friendListeners: Array<{ ref: any; callback: any }> = [];
-    let isUnsubscribed = false;
+    const userFriendsRef = child(
+      dbRef,
+      `${UserRepository.collectionName}/${userId}/friends`
+    );
 
-    // First, get the user's friend list
-    get(child(dbRef, `${UserRepository.collectionName}/${userId}/friends`))
-      .then((snapshot) => {
-        if (isUnsubscribed) return;
+    // Store active listeners for each friend so we can unsubscribe individually
+    const friendListeners = new Map<string, { ref: any; callback: any }>();
+    const friendsMap = new Map<string, User>();
 
-        if (!snapshot.exists()) {
-          callback([]);
-          return;
+    const onFriendsListChange = (snapshot: any) => {
+      const currentFriendIds: string[] = snapshot.exists()
+        ? (snapshot.val() as string[])
+        : [];
+
+      // 1. Identify friends to remove (present in listeners but not in new list)
+      for (const [friendId, listener] of friendListeners) {
+        if (!currentFriendIds.includes(friendId)) {
+          off(listener.ref, "value", listener.callback);
+          friendListeners.delete(friendId);
+          friendsMap.delete(friendId);
         }
+      }
 
-        const friendIds = snapshot.val() as string[];
-        if (!friendIds || friendIds.length === 0) {
-          callback([]);
-          return;
-        }
-
-        const friendsMap = new Map<string, User>();
-
-        friendIds.forEach((friendId) => {
+      // 2. Identify new friends to add (present in new list but not in listeners)
+      currentFriendIds.forEach((friendId) => {
+        if (!friendListeners.has(friendId)) {
           const friendRef = child(
             dbRef,
             `${UserRepository.collectionName}/${friendId}`
@@ -185,20 +189,33 @@ class UserRepository implements IUserRepository {
             } else {
               friendsMap.delete(friendId);
             }
+            // Emit updated list whenever any friend's data changes
             callback(Array.from(friendsMap.values()));
           };
 
           onValue(friendRef, onFriendChange);
-          friendListeners.push({ ref: friendRef, callback: onFriendChange });
-        });
-      })
-      .catch((err) => console.error("Error subscribing to friends", err));
-
-    return () => {
-      isUnsubscribed = true;
-      friendListeners.forEach((listener) => {
-        off(listener.ref, "value", listener.callback);
+          friendListeners.set(friendId, {
+            ref: friendRef,
+            callback: onFriendChange,
+          });
+        }
       });
+
+      // If list is empty, clear everything and emit empty array
+      if (currentFriendIds.length === 0) {
+        callback([]);
+      }
+    };
+
+    // Listen to the user's "friends" array for additions/removals
+    onValue(userFriendsRef, onFriendsListChange);
+
+    // Return unsubscriber
+    return () => {
+      off(userFriendsRef, "value", onFriendsListChange);
+      for (const listener of friendListeners.values()) {
+        off(listener.ref, "value", listener.callback);
+      }
     };
   }
 }
