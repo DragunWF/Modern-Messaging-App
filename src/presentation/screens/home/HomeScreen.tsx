@@ -19,7 +19,7 @@ import GroupListItem from "../../components/group/GroupListItem";
 import User from "../../../domain/entities/user";
 import GroupChat from "../../../domain/entities/groupChat";
 import { AntDesign } from "@expo/vector-icons";
-import { CHAT_SCREEN_NAMES } from "../../../shared/constants/navigation";
+import { CHAT_SCREEN_NAMES, NAVIGATOR_NAMES } from "../../../shared/constants/navigation";
 
 function HomeScreen() {
   const { colors } = useTheme();
@@ -29,8 +29,7 @@ function HomeScreen() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isCreateGroupModalVisible, setIsCreateGroupModalVisible] =
-    useState(false);
+  const [isCreateGroupModalVisible, setIsCreateGroupModalVisible] = useState(false);
   const [allFriends, setAllFriends] = useState<User[]>([]);
   const [groupChats, setGroupChats] = useState<GroupChat[]>([]);
 
@@ -77,11 +76,17 @@ function HomeScreen() {
   };
 
   const handleFriendPress = (userId: string) => {
-    navigation.navigate(CHAT_SCREEN_NAMES.Chat, { userId });
+    navigation.navigate(NAVIGATOR_NAMES.ChatNavigator, {
+      screen: CHAT_SCREEN_NAMES.Chat,
+      params: { userId },
+    });
   };
 
   const handleGroupPress = (groupId: string) => {
-    navigation.navigate(CHAT_SCREEN_NAMES.GroupChat, { groupId });
+    navigation.navigate(NAVIGATOR_NAMES.ChatNavigator, {
+      screen: CHAT_SCREEN_NAMES.GroupChat,
+      params: { groupId },
+    });
   };
 
   const handleCreateGroupChatPress = () => {
@@ -244,3 +249,4 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+
