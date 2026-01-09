@@ -6,6 +6,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
+  GestureResponderEvent,
+  TouchableWithoutFeedback,
+  Dimensions, // Added Dimensions
+  ViewStyle, // Added ViewStyle
 } from "react-native";
 import {
   useRoute,
@@ -19,9 +23,17 @@ import ChatHeader from "../../components/chat/ChatHeader";
 import MessageBubble from "../../components/chat/MessageBubble";
 import ChatInput from "../../components/chat/ChatInput";
 import TypingIndicator from "../../components/chat/TypingIndicator";
+import ReactionPicker from "../../components/chat/ReactionPicker"; // Import new component
+import MessageActionsOverlay from "../../components/chat/MessageActionsOverlay"; // Import new component
 import Message from "../../../domain/entities/message";
 import User from "../../../domain/entities/user";
 import GroupChat from "../../../domain/entities/groupChat";
+
+interface SelectedMessageState {
+  message: Message;
+  pageY: number; // Y position of the long-press event
+  pageX: number; // X position of the long-press event
+}
 
 function ChatScreen() {
   const { colors } = useTheme();
@@ -29,6 +41,7 @@ function ChatScreen() {
   const route = useRoute<any>();
   const { user: authUser } = useAuth();
   const { chatUseCases, userUseCases } = useService();
+  const { height: screenHeight } = Dimensions.get("window"); // Get screen dimensions
 
   // Extract params
   const { userId, groupId } = route.params || {};
@@ -45,6 +58,10 @@ function ChatScreen() {
 
   // Typing status state
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+
+  // Message Options Overlay state
+  const [selectedMessage, setSelectedMessage] =
+    useState<SelectedMessageState | null>(null);
 
   // Fetch Chat Info (User)
   useEffect(() => {
@@ -185,6 +202,84 @@ function ChatScreen() {
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  const handleMessageLongPress = useCallback(
+    (message: Message, event: GestureResponderEvent) => {
+      setSelectedMessage({
+        message,
+        pageY: event.nativeEvent.pageY,
+        pageX: event.nativeEvent.pageX,
+      });
+    },
+    []
+  );
+
+  const handleCloseOverlay = useCallback(() => {
+    setSelectedMessage(null);
+  }, []);
+
+  const handleSelectReaction = useCallback(
+    async (emoji: string) => {
+      if (!selectedMessage?.message || !authUser?.id) return;
+      
+      try {
+        await chatUseCases.toggleReaction(
+          selectedMessage.message.id,
+          authUser.id,
+          emoji
+        );
+      } catch (error) {
+        console.error("Failed to toggle reaction", error);
+      }
+      
+      handleCloseOverlay();
+    },
+    [selectedMessage?.message, authUser?.id, handleCloseOverlay]
+  );
+
+  const handleReply = useCallback(() => {
+    if (!selectedMessage?.message) return;
+    console.log(`Reply to message: ${selectedMessage.message.id}`);
+    // TODO: Implement reply feature
+    handleCloseOverlay();
+  }, [selectedMessage?.message, handleCloseOverlay]);
+
+  const handleForward = useCallback(() => {
+    if (!selectedMessage?.message) return;
+    console.log(`Forward message: ${selectedMessage.message.id}`);
+    // TODO: Implement forward feature
+    handleCloseOverlay();
+  }, [selectedMessage?.message, handleCloseOverlay]);
+
+  const handleCopy = useCallback(() => {
+    if (!selectedMessage?.message) return;
+    console.log(`Copy message text: ${selectedMessage.message.content}`);
+    // TODO: Implement copy feature
+    // For now, MessageActionsOverlay handles its own copy logic
+    handleCloseOverlay();
+  }, [selectedMessage?.message, handleCloseOverlay]);
+
+  // Calculate overlay positions dynamically
+  const getReactionPickerPosition = (): ViewStyle => {
+    if (!selectedMessage) return {};
+    const top = selectedMessage.pageY - 60; // Slightly higher
+    // Ensure it doesn't clip top of screen
+    const clampedTop = Math.max(top, 100); // 100 is roughly header height + status bar
+    return {
+      top: clampedTop,
+      left: Math.min(Math.max(selectedMessage.pageX - 100, 20), 200), // Clamp horizontally too
+    };
+  };
+
+  const getMessageActionsPosition = (): ViewStyle => {
+    if (!selectedMessage) return {};
+    // If reaction picker pushed down due to top clip, push actions down too
+    const top = selectedMessage.pageY + 20;
+    return {
+      top: Math.max(top, 160),
+      left: Math.min(Math.max(selectedMessage.pageX - 100, 20), 100),
+    };
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -210,6 +305,8 @@ function ChatScreen() {
               isMe={item.senderId === authUser?.id}
               timestamp={formatTime(item.timestamp)}
               senderName={resolveSenderName(item.senderId)}
+              reactions={item.reactions} // Pass reactions
+              onLongPress={(event) => handleMessageLongPress(item, event)} // New handler
             />
           )}
           contentContainerStyle={styles.listContent}
@@ -220,6 +317,31 @@ function ChatScreen() {
 
         <ChatInput onSend={handleSend} onTyping={handleTyping} />
       </KeyboardAvoidingView>
+
+      {selectedMessage && (
+        <TouchableWithoutFeedback onPress={handleCloseOverlay}>
+          <View style={styles.overlayBackdrop} />
+        </TouchableWithoutFeedback>
+      )}
+
+      {selectedMessage && (
+        <ReactionPicker
+          onSelectReaction={handleSelectReaction}
+          onClose={handleCloseOverlay}
+          style={getReactionPickerPosition()}
+        />
+      )}
+
+      {selectedMessage && (
+        <MessageActionsOverlay
+          messageText={selectedMessage.message.content}
+          isMyMessage={selectedMessage.message.senderId === authUser?.id}
+          onReply={handleReply}
+          onForward={handleForward}
+          onClose={handleCloseOverlay}
+          style={getMessageActionsPosition()}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -234,6 +356,15 @@ const styles = StyleSheet.create({
   listContent: {
     paddingVertical: 10,
     paddingHorizontal: 5,
+  },
+  overlayBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    zIndex: 999,
   },
 });
 

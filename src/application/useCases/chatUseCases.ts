@@ -163,4 +163,43 @@ export class ChatUseCases {
       }
     );
   }
+
+  async toggleReaction(
+    messageId: string,
+    userId: string,
+    emoji: string
+  ): Promise<void> {
+    const message = await this.messageRepository.getMessageById(messageId);
+    if (!message) return;
+
+    const reactions = message.reactions || {};
+    const userIds = reactions[emoji] || [];
+
+    if (userIds.includes(userId)) {
+      // Remove reaction
+      reactions[emoji] = userIds.filter((id) => id !== userId);
+      if (reactions[emoji].length === 0) {
+        delete reactions[emoji];
+      }
+    } else {
+      // Add reaction
+      // Optional: Remove user from other reactions if you want single-reaction logic
+      // For now, we'll allow multiple reactions per user (like Slack/Discord)
+      // or implement Messenger style (one reaction per user).
+      // Messenger style: Remove user from ALL other emojis first.
+      Object.keys(reactions).forEach((key) => {
+        if (reactions[key].includes(userId)) {
+          reactions[key] = reactions[key].filter((id) => id !== userId);
+          if (reactions[key].length === 0) {
+            delete reactions[key];
+          }
+        }
+      });
+
+      reactions[emoji] = [...(reactions[emoji] || []), userId];
+    }
+
+    const updatedMessage = { ...message, reactions };
+    await this.messageRepository.updateMessage(updatedMessage);
+  }
 }
