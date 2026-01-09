@@ -282,6 +282,7 @@ function HomeScreen() {
                   unreadMessageCount={getUnreadCountForFriend(item.id)}
                 />
               )}
+              alwaysBounceVertical={false}
               contentContainerStyle={styles.listContent}
               ListEmptyComponent={
                 displayedGroups.length === 0 ? (
