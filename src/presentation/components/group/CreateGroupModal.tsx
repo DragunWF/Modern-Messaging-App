@@ -18,12 +18,14 @@ import Button from "../ui/Button";
 interface CreateGroupModalProps {
   visible: boolean;
   onClose: () => void;
+  onCreate: (name: string, memberIds: string[]) => void;
   friends: User[];
 }
 
 const CreateGroupModal = ({
   visible,
   onClose,
+  onCreate,
   friends,
 }: CreateGroupModalProps) => {
   const { colors } = useTheme();
@@ -43,13 +45,7 @@ const CreateGroupModal = ({
   };
 
   const handleCreate = () => {
-    // Placeholder for creation logic
-    console.log(
-      "Creating group:",
-      groupName,
-      "with members:",
-      Array.from(selectedFriendIds)
-    );
+    onCreate(groupName, Array.from(selectedFriendIds));
     onClose();
     // Reset state
     setGroupName("");

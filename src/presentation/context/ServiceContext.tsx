@@ -1,6 +1,7 @@
 import React, { createContext, useContext, ReactNode } from "react";
 import { UserUseCases } from "../../application/useCases/userUseCases";
 import { ChatUseCases } from "../../application/useCases/chatUseCases";
+import { GroupChatUseCases } from "../../application/useCases/groupChatUseCases";
 import { FirebaseAuthService } from "../../infrastructure/auth/authService";
 import UserRepository from "../../infrastructure/repositories/userRepository";
 import NotificationRepository from "../../infrastructure/repositories/notificationRepository";
@@ -10,6 +11,7 @@ import GroupChatRepository from "../../infrastructure/repositories/groupChatRepo
 interface ServiceContextType {
   userUseCases: UserUseCases;
   chatUseCases: ChatUseCases;
+  groupChatUseCases: GroupChatUseCases;
 }
 
 const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
@@ -34,8 +36,10 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     groupChatRepository
   );
 
+  const groupChatUseCases = new GroupChatUseCases(groupChatRepository);
+
   return (
-    <ServiceContext.Provider value={{ userUseCases, chatUseCases }}>
+    <ServiceContext.Provider value={{ userUseCases, chatUseCases, groupChatUseCases }}>
       {children}
     </ServiceContext.Provider>
   );

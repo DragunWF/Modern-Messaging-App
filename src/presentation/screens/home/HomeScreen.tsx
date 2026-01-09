@@ -15,25 +15,30 @@ import Header from "../../components/ui/Header";
 import SearchBar from "../../components/ui/SearchBar";
 import FriendListItem from "../../components/user/FriendListItem";
 import CreateGroupModal from "../../components/group/CreateGroupModal";
+import GroupListItem from "../../components/group/GroupListItem";
 import User from "../../../domain/entities/user";
+import GroupChat from "../../../domain/entities/groupChat";
 import { AntDesign } from "@expo/vector-icons";
+import { CHAT_SCREEN_NAMES } from "../../../shared/constants/navigation";
 
 function HomeScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const { user: authUser } = useAuth();
-  const { userUseCases } = useService();
+  const { userUseCases, groupChatUseCases } = useService();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isCreateGroupModalVisible, setIsCreateGroupModalVisible] = useState(false);
+  const [isCreateGroupModalVisible, setIsCreateGroupModalVisible] =
+    useState(false);
   const [allFriends, setAllFriends] = useState<User[]>([]);
+  const [groupChats, setGroupChats] = useState<GroupChat[]>([]);
 
   useEffect(() => {
     if (!authUser?.id) return;
     setIsLoading(true);
 
-    const unsubscribe = userUseCases.subscribeToFriends(
+    const unsubscribeFriends = userUseCases.subscribeToFriends(
       authUser.id,
       (updatedFriends) => {
         setAllFriends(updatedFriends);
@@ -41,7 +46,17 @@ function HomeScreen() {
       }
     );
 
-    return () => unsubscribe();
+    const unsubscribeGroups = groupChatUseCases.subscribeToGroupChats(
+      authUser.id,
+      (updatedGroups) => {
+        setGroupChats(updatedGroups);
+      }
+    );
+
+    return () => {
+      unsubscribeFriends();
+      unsubscribeGroups();
+    };
   }, [authUser?.id]);
 
   // Derived state for display
@@ -51,16 +66,63 @@ function HomeScreen() {
       )
     : allFriends;
 
+  const displayedGroups = searchQuery
+    ? groupChats.filter((g) =>
+        g.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : groupChats;
+
   const handleLocalSearch = (text: string) => {
     setSearchQuery(text);
   };
 
   const handleFriendPress = (userId: string) => {
-    navigation.navigate("Chat", { userId });
+    navigation.navigate(CHAT_SCREEN_NAMES.Chat, { userId });
+  };
+
+  const handleGroupPress = (groupId: string) => {
+    navigation.navigate(CHAT_SCREEN_NAMES.GroupChat, { groupId });
   };
 
   const handleCreateGroupChatPress = () => {
     setIsCreateGroupModalVisible(true);
+  };
+
+  const handleCreateGroup = async (name: string, memberIds: string[]) => {
+    if (!authUser?.id) return;
+    try {
+      await groupChatUseCases.createGroupChat(name, authUser.id, memberIds);
+    } catch (error) {
+      console.error("Failed to create group chat", error);
+    }
+  };
+
+  const renderHeader = () => {
+    if (displayedGroups.length === 0) return null;
+    return (
+      <View style={styles.groupListContainer}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+          Groups
+        </Text>
+        {displayedGroups.map((group) => (
+          <GroupListItem
+            key={group.id}
+            groupChat={group}
+            onPress={handleGroupPress}
+          />
+        ))}
+        {displayedFriends.length > 0 && (
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.textSecondary, marginTop: 10 },
+            ]}
+          >
+            Friends
+          </Text>
+        )}
+      </View>
+    );
   };
 
   return (
@@ -72,7 +134,7 @@ function HomeScreen() {
       <View style={styles.contentContainer}>
         <View style={styles.searchAndCreateGroupContainer}>
           <SearchBar
-            placeholder="Search friends..."
+            placeholder="Search friends & groups..."
             value={searchQuery}
             onChangeText={handleLocalSearch}
             onClear={() => handleLocalSearch("")}
@@ -95,6 +157,7 @@ function HomeScreen() {
             <FlatList
               data={displayedFriends}
               keyExtractor={(item) => item.id}
+              ListHeaderComponent={renderHeader}
               renderItem={({ item }) => (
                 <FriendListItem
                   user={item}
@@ -104,13 +167,15 @@ function HomeScreen() {
               )}
               contentContainerStyle={styles.listContent}
               ListEmptyComponent={
-                <Text
-                  style={[styles.emptyText, { color: colors.textSecondary }]}
-                >
-                  {searchQuery
-                    ? "No friends found matching your search."
-                    : "No friends yet. Go to Discover to add some!"}
-                </Text>
+                displayedGroups.length === 0 ? (
+                  <Text
+                    style={[styles.emptyText, { color: colors.textSecondary }]}
+                  >
+                    {searchQuery
+                      ? "No results found."
+                      : "No friends yet. Go to Discover to add some!"}
+                  </Text>
+                ) : null
               }
             />
           </View>
@@ -120,6 +185,7 @@ function HomeScreen() {
       <CreateGroupModal
         visible={isCreateGroupModalVisible}
         onClose={() => setIsCreateGroupModalVisible(false)}
+        onCreate={handleCreateGroup}
         friends={allFriends}
       />
     </View>
@@ -164,6 +230,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  groupListContainer: {
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
 });
 

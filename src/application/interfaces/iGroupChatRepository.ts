@@ -6,4 +6,8 @@ export default interface IGroupChatRepository {
   updateGroupChat(groupChat: GroupChat): Promise<GroupChat>;
   deleteGroupChat(id: string): Promise<void>;
   getGroupChatsByMemberId(memberId: string): Promise<GroupChat[]>;
+  subscribeToGroupChats(
+    memberId: string,
+    callback: (groupChats: GroupChat[]) => void
+  ): () => void;
 }
