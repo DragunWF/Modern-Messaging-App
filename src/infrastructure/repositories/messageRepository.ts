@@ -10,6 +10,7 @@ import {
   equalTo,
   onValue,
   off,
+  onDisconnect,
 } from "firebase/database";
 import { rtdb } from "../database/firebaseConfig";
 import type IMessageRepository from "../../application/interfaces/iMessageRepository";
@@ -136,6 +137,46 @@ export default class MessageRepository implements IMessageRepository {
 
     return () => {
       off(messagesRef, "value", onValueChange);
+    };
+  }
+
+  async setTypingStatus(
+    chatId: string,
+    userId: string,
+    isTyping: boolean
+  ): Promise<void> {
+    const typingRef = ref(rtdb, `typingStatus/${chatId}/${userId}`);
+    if (isTyping) {
+      await set(typingRef, true);
+      // Optional: Auto-remove on disconnect so it doesn't get stuck if app crashes
+      onDisconnect(typingRef).remove();
+    } else {
+      await remove(typingRef);
+      onDisconnect(typingRef).cancel();
+    }
+  }
+
+  subscribeToTypingStatus(
+    chatId: string,
+    callback: (typingUserIds: string[]) => void
+  ): () => void {
+    const typingRef = ref(rtdb, `typingStatus/${chatId}`);
+
+    const onValueChange = (snapshot: any) => {
+      if (snapshot.exists()) {
+        const typingData = snapshot.val();
+        // Returns an array of userIds who are currently typing (keys where value is true)
+        const typingUserIds = Object.keys(typingData);
+        callback(typingUserIds);
+      } else {
+        callback([]);
+      }
+    };
+
+    onValue(typingRef, onValueChange);
+
+    return () => {
+      off(typingRef, "value", onValueChange);
     };
   }
 }

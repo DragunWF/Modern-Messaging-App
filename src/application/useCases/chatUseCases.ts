@@ -42,7 +42,10 @@ export class ChatUseCases {
     );
   }
 
-  async createGroupChat(name: string, memberIds: string[]): Promise<GroupChat> {
+  async createGroupChat(
+    name: string,
+    memberIds: string[]
+  ): Promise<GroupChat> {
     const newGroupChat: GroupChat = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       name,
@@ -83,4 +86,43 @@ export class ChatUseCases {
       callback(filteredMessages);
     });
   }
+
+  private getChatId(currentUserId: string, otherId: string, isGroup: boolean): string {
+    if (isGroup) {
+      return otherId;
+    } else {
+      // Create a consistent ID for 1-on-1 chats regardless of who is sender/receiver
+      return currentUserId < otherId
+        ? `${currentUserId}_${otherId}`
+        : `${otherId}_${currentUserId}`;
+    }
+  }
+
+  async sendTypingStatus(
+    currentUserId: string,
+    otherId: string,
+    isGroup: boolean,
+    isTyping: boolean
+  ): Promise<void> {
+    const chatId = this.getChatId(currentUserId, otherId, isGroup);
+    console.log(`[Typing] Sending status for chat ${chatId}: User ${currentUserId} is ${isTyping ? 'typing' : 'stopped'}`);
+    await this.messageRepository.setTypingStatus(chatId, currentUserId, isTyping);
+  }
+
+  subscribeToTypingStatus(
+    currentUserId: string,
+    otherId: string,
+    isGroup: boolean,
+    callback: (typingUserIds: string[]) => void
+  ): () => void {
+    const chatId = this.getChatId(currentUserId, otherId, isGroup);
+    console.log(`[Typing] Subscribing to chat ${chatId} for user ${currentUserId}`);
+    return this.messageRepository.subscribeToTypingStatus(chatId, (typingUserIds) => {
+      console.log(`[Typing] Update for chat ${chatId}:`, typingUserIds);
+      // Filter out self
+      const othersTyping = typingUserIds.filter(id => id !== currentUserId);
+      callback(othersTyping);
+    });
+  }
 }
+

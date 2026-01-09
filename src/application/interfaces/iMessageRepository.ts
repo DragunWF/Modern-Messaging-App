@@ -9,4 +9,9 @@ export default interface IMessageRepository {
   subscribeToMessages(
     callback: (messages: Message[]) => void
   ): () => void;
+  setTypingStatus(chatId: string, userId: string, isTyping: boolean): Promise<void>;
+  subscribeToTypingStatus(
+    chatId: string,
+    callback: (typingUserIds: string[]) => void
+  ): () => void;
 }

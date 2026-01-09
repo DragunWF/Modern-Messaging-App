@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
+  Text, // Import Text for the typing indicator
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { useTheme } from "../../context/ThemeContext";
@@ -37,6 +38,9 @@ function ChatScreen() {
   const [sendersCache, setSendersCache] = useState<Record<string, string>>({});
   // To avoid repeated fetches for the same unknown user
   const fetchingUserIds = useRef<Set<string>>(new Set());
+
+  // Typing status state
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
   // Fetch Chat Info (User)
   useEffect(() => {
@@ -70,8 +74,26 @@ function ChatScreen() {
       otherId,
       isGroup,
       (newMessages) => {
-        newMessages.reverse();
+        newMessages.reverse(); // User's preference
         setMessages(newMessages);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [authUser?.id, userId, groupId, isGroup]);
+
+  // Subscribe to Typing Status
+  useEffect(() => {
+    if (!authUser?.id) return;
+    const otherId = isGroup ? groupId : userId;
+    if (!otherId) return;
+
+    const unsubscribe = chatUseCases.subscribeToTypingStatus(
+      authUser.id,
+      otherId,
+      isGroup,
+      (usersTyping) => {
+        setTypingUsers(usersTyping);
       }
     );
 
@@ -113,13 +135,36 @@ function ChatScreen() {
     }
   };
 
+  const handleTyping = (isTyping: boolean) => {
+    if (!authUser?.id) return;
+    const receiverId = isGroup ? groupId : userId;
+    if (!receiverId) return;
+
+    chatUseCases
+      .sendTypingStatus(authUser.id, receiverId, isGroup, isTyping)
+      .catch((err) => console.error("Error sending typing status", err));
+  };
+
   const chatTitle = isGroup ? "Group Chat" : chatPartner?.username || "Chat";
 
-  const chatSubtitle = isGroup
+  // Default subtitle for header (online status for 1-on-1, empty for groups)
+  const chatHeaderSubtitle = isGroup
     ? ""
     : chatPartner?.isOnline
     ? "Online"
     : "Offline";
+
+  // Typing indicator text for the bottom
+  let typingIndicatorText = "";
+  if (typingUsers.length > 0) {
+    if (isGroup) {
+      typingIndicatorText = "Someone is typing...";
+    } else {
+      // 1-on-1: "Name is typing..."
+      // For 1-on-1, typingUsers will only contain the other user's ID
+      typingIndicatorText = `${chatPartner?.username || "User"} is typing...`;
+    }
+  }
 
   const formatTime = (dateObj: Date | string) => {
     if (!dateObj) return "";
@@ -134,7 +179,7 @@ function ChatScreen() {
     >
       <ChatHeader
         title={chatTitle}
-        subtitle={chatSubtitle}
+        subtitle={chatHeaderSubtitle} // Use the default subtitle
         onBackPress={() => navigation.goBack()}
         onProfilePress={() => {}}
       />
@@ -159,7 +204,20 @@ function ChatScreen() {
           inverted
         />
 
-        <ChatInput onSend={handleSend} />
+        {typingIndicatorText.length > 0 && (
+          <View style={styles.typingIndicatorContainer}>
+            <Text
+              style={[
+                styles.typingIndicatorText,
+                { color: colors.textSecondary },
+              ]}
+            >
+              {typingIndicatorText}
+            </Text>
+          </View>
+        )}
+
+        <ChatInput onSend={handleSend} onTyping={handleTyping} />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -175,6 +233,15 @@ const styles = StyleSheet.create({
   listContent: {
     paddingVertical: 10,
     paddingHorizontal: 5,
+  },
+  typingIndicatorContainer: {
+    paddingHorizontal: 15,
+    paddingBottom: 5,
+    marginBottom: 6,
+    alignItems: "flex-start",
+  },
+  typingIndicatorText: {
+    fontSize: 12,
   },
 });
 

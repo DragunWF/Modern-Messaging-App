@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   TextInput,
@@ -11,22 +11,38 @@ import { useTheme } from "../../context/ThemeContext";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
-  onTyping?: () => void;
+  onTyping?: (isTyping: boolean) => void;
 }
 
 const ChatInput = ({ onSend, onTyping }: ChatInputProps) => {
   const { colors } = useTheme();
   const [text, setText] = useState("");
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSend = () => {
     if (text.trim().length === 0) return;
     onSend(text);
     setText("");
+    // Stop typing immediately on send
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    if (onTyping) onTyping(false);
   };
 
   const handleChangeText = (val: string) => {
     setText(val);
-    if (onTyping) onTyping();
+
+    if (onTyping) {
+      onTyping(true);
+
+      // Debounce the "stop typing" event
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      typingTimeoutRef.current = setTimeout(() => {
+        onTyping(false);
+      }, 2000); // 2 seconds of inactivity means stopped typing
+    }
   };
 
   return (
@@ -42,7 +58,7 @@ const ChatInput = ({ onSend, onTyping }: ChatInputProps) => {
       <TouchableOpacity style={styles.iconButton}>
         <Ionicons name="add-circle" size={28} color={colors.primary} />
       </TouchableOpacity>
-      
+
       <TouchableOpacity style={styles.iconButton}>
         <Ionicons name="image-outline" size={26} color={colors.primary} />
       </TouchableOpacity>
@@ -62,7 +78,11 @@ const ChatInput = ({ onSend, onTyping }: ChatInputProps) => {
           onChangeText={handleChangeText}
         />
         <TouchableOpacity style={styles.emojiButton}>
-            <MaterialIcons name="emoji-emotions" size={24} color={colors.primary} />
+          <MaterialIcons
+            name="emoji-emotions"
+            size={24}
+            color={colors.primary}
+          />
         </TouchableOpacity>
       </View>
 
@@ -95,7 +115,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
     borderRadius: 20,
     minHeight: 40,
     paddingHorizontal: 12,
@@ -110,7 +130,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   emojiButton: {
-      marginLeft: 5,
+    marginLeft: 5,
   },
   sendButton: {
     padding: 6,
