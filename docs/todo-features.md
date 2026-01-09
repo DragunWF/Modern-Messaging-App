@@ -34,7 +34,6 @@
 - [x] UI layout
 - [x] Accept friend request feature
 - [x] Reject friend request feature
-- [ ] _"Unread messages from `X` user/group"_ feature
 
 ### Settings Screen
 
