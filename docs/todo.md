@@ -51,7 +51,7 @@
 - [x] Message replies feature
 - [x] Message reactions feature
 - [x] Image messaging feature
-- [ ] File messaging feature
+- [x] File messaging feature
 - [ ] Voice messaging feature
 - [x] Typing indicators
 
