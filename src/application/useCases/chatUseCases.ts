@@ -14,7 +14,12 @@ export class ChatUseCases {
   async sendMessage(
     senderId: string,
     receiverId: string,
-    content: string
+    content: string,
+    replyTo?: {
+      content: string;
+      senderId: string;
+      senderName?: string;
+    }
   ): Promise<Message> {
     const newMessage: Message = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -26,6 +31,7 @@ export class ChatUseCases {
       isDeleted: false,
       isForwarded: false,
       reactions: {},
+      replyTo,
     };
     return await this.messageRepository.createMessage(newMessage);
   }

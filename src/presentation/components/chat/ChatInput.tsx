@@ -4,6 +4,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Text,
   Platform,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -12,9 +13,16 @@ import { useTheme } from "../../context/ThemeContext";
 interface ChatInputProps {
   onSend: (text: string) => void;
   onTyping?: (isTyping: boolean) => void;
+  replyingTo?: { content: string; senderName?: string } | null;
+  onCancelReply?: () => void;
 }
 
-const ChatInput = ({ onSend, onTyping }: ChatInputProps) => {
+const ChatInput = ({
+  onSend,
+  onTyping,
+  replyingTo,
+  onCancelReply,
+}: ChatInputProps) => {
   const { colors } = useTheme();
   const [text, setText] = useState("");
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -46,55 +54,90 @@ const ChatInput = ({ onSend, onTyping }: ChatInputProps) => {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
-        },
-      ]}
-    >
-      <TouchableOpacity style={styles.iconButton}>
-        <Ionicons name="add-circle" size={28} color={colors.primary} />
-      </TouchableOpacity>
+    <View style={{ backgroundColor: colors.background }}>
+      {/* Reply Preview */}
+      {replyingTo && (
+        <View
+          style={[
+            styles.replyPreview,
+            {
+              backgroundColor: colors.backgroundInput,
+              borderTopColor: colors.border,
+            },
+          ]}
+        >
+          <View
+            style={[styles.replyBar, { backgroundColor: colors.primary }]}
+          />
+          <View style={styles.replyContent}>
+            <Text style={[styles.replySender, { color: colors.primary }]}>
+              {replyingTo.senderName || "User"}
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={[styles.replyText, { color: colors.textSecondary }]}
+            >
+              {replyingTo.content}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={onCancelReply} style={styles.closeButton}>
+            <Ionicons name="close-circle" size={24} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      )}
 
-      <TouchableOpacity style={styles.iconButton}>
-        <Ionicons name="image-outline" size={26} color={colors.primary} />
-      </TouchableOpacity>
-
+      {/* Input Row */}
       <View
         style={[
-          styles.inputWrapper,
-          { backgroundColor: colors.backgroundInput },
+          styles.container,
+          {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+            borderTopWidth: replyingTo ? 0 : 1, // Remove border if reply preview is shown (it has its own)
+          },
         ]}
       >
-        <TextInput
-          style={[styles.input, { color: colors.textPrimary }]}
-          placeholder="Message..."
-          placeholderTextColor={colors.textPlaceholder}
-          multiline
-          value={text}
-          onChangeText={handleChangeText}
-        />
-        <TouchableOpacity style={styles.emojiButton}>
-          <MaterialIcons
-            name="emoji-emotions"
-            size={24}
-            color={colors.primary}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {text.trim().length > 0 ? (
-        <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-          <Ionicons name="send" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      ) : (
         <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="mic-outline" size={26} color={colors.primary} />
+          <Ionicons name="add-circle" size={28} color={colors.primary} />
         </TouchableOpacity>
-      )}
+
+        <TouchableOpacity style={styles.iconButton}>
+          <Ionicons name="image-outline" size={26} color={colors.primary} />
+        </TouchableOpacity>
+
+        <View
+          style={[
+            styles.inputWrapper,
+            { backgroundColor: colors.backgroundInput },
+          ]}
+        >
+          <TextInput
+            style={[styles.input, { color: colors.textPrimary }]}
+            placeholder="Message..."
+            placeholderTextColor={colors.textPlaceholder}
+            multiline
+            value={text}
+            onChangeText={handleChangeText}
+          />
+          <TouchableOpacity style={styles.emojiButton}>
+            <MaterialIcons
+              name="emoji-emotions"
+              size={24}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {text.trim().length > 0 ? (
+          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+            <Ionicons name="send" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="mic-outline" size={26} color={colors.primary} />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 };
@@ -106,6 +149,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     borderTopWidth: 1,
+  },
+  replyPreview: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+  },
+  replyBar: {
+    width: 4,
+    height: "100%",
+    borderRadius: 2,
+    marginRight: 10,
+  },
+  replyContent: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  replySender: {
+    fontWeight: "bold",
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  replyText: {
+    fontSize: 14,
+  },
+  closeButton: {
+    padding: 4,
   },
   iconButton: {
     padding: 6,

@@ -63,6 +63,9 @@ function ChatScreen() {
   const [selectedMessage, setSelectedMessage] =
     useState<SelectedMessageState | null>(null);
 
+  // Reply state
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+
   // Fetch Chat Info (User)
   useEffect(() => {
     const fetchDetails = async () => {
@@ -159,7 +162,16 @@ function ChatScreen() {
     if (!receiverId) return;
 
     try {
-      await chatUseCases.sendMessage(authUser.id, receiverId, text);
+      const replyData = replyingTo
+        ? {
+            content: replyingTo.content,
+            senderId: replyingTo.senderId,
+            senderName: resolveSenderName(replyingTo.senderId),
+          }
+        : undefined;
+
+      await chatUseCases.sendMessage(authUser.id, receiverId, text, replyData);
+      setReplyingTo(null); // Clear reply state after sending
     } catch (error) {
       console.error("Failed to send message:", error);
     }
@@ -238,8 +250,7 @@ function ChatScreen() {
 
   const handleReply = useCallback(() => {
     if (!selectedMessage?.message) return;
-    console.log(`Reply to message: ${selectedMessage.message.id}`);
-    // TODO: Implement reply feature
+    setReplyingTo(selectedMessage.message);
     handleCloseOverlay();
   }, [selectedMessage?.message, handleCloseOverlay]);
 
@@ -298,6 +309,7 @@ function ChatScreen() {
               timestamp={formatTime(item.timestamp)}
               senderName={resolveSenderName(item.senderId)}
               reactions={item.reactions} // Pass reactions
+              replyTo={item.replyTo} // Pass reply info
               onLongPress={(event) => handleMessageLongPress(item, event)} // New handler
             />
           )}
@@ -307,7 +319,19 @@ function ChatScreen() {
 
         <TypingIndicator text={typingIndicatorText} />
 
-        <ChatInput onSend={handleSend} onTyping={handleTyping} />
+        <ChatInput
+          onSend={handleSend}
+          onTyping={handleTyping}
+          replyingTo={
+            replyingTo
+              ? {
+                  content: replyingTo.content,
+                  senderName: resolveSenderName(replyingTo.senderId),
+                }
+              : null
+          }
+          onCancelReply={() => setReplyingTo(null)}
+        />
       </KeyboardAvoidingView>
 
       {selectedMessage && (

@@ -16,6 +16,11 @@ interface MessageBubbleProps {
   senderName?: string; // For group chats
   status?: "sent" | "delivered" | "read";
   reactions?: Record<string, string[]>; // New prop
+  replyTo?: {
+    content: string;
+    senderId: string;
+    senderName?: string;
+  };
   onLongPress?: (event: GestureResponderEvent) => void; // New prop for long press
 }
 
@@ -25,6 +30,7 @@ const MessageBubble = ({
   timestamp,
   senderName,
   reactions,
+  replyTo,
   onLongPress,
 }: MessageBubbleProps) => {
   const { colors } = useTheme();
@@ -58,6 +64,41 @@ const MessageBubble = ({
             },
           ]}
         >
+          {/* Reply Quote Block */}
+          {replyTo && (
+            <View
+              style={[
+                styles.replyContainer,
+                {
+                  backgroundColor: isMe ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.05)",
+                  borderLeftColor: isMe ? colors.textInverse : colors.primary,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.replySender,
+                  { color: isMe ? colors.textInverse : colors.primary },
+                ]}
+              >
+                {replyTo.senderName || "User"}
+              </Text>
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.replyText,
+                  {
+                    color: isMe
+                      ? "rgba(255,255,255,0.8)"
+                      : colors.textSecondary,
+                  },
+                ]}
+              >
+                {replyTo.content}
+              </Text>
+            </View>
+          )}
+
           <Text
             style={[
               styles.text,
@@ -177,6 +218,21 @@ const styles = StyleSheet.create({
   reactionCount: {
     fontSize: 10,
     fontWeight: "bold",
+  },
+  // New Styles for Reply
+  replyContainer: {
+    marginBottom: 8,
+    padding: 8,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+  },
+  replySender: {
+    fontSize: 12,
+    fontWeight: "bold",
+    marginBottom: 2,
+  },
+  replyText: {
+    fontSize: 12,
   },
 });
 
