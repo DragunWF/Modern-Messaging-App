@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 import { useTheme } from "../../context/ThemeContext";
 
 interface ChatInputProps {
@@ -18,6 +19,7 @@ interface ChatInputProps {
   replyingTo?: { content: string; senderName?: string } | null;
   onCancelReply?: () => void;
   onSendImage?: (uri: string) => void;
+  onSendFile?: (uri: string, name: string) => void;
 }
 
 const ChatInput = ({
@@ -26,6 +28,7 @@ const ChatInput = ({
   replyingTo,
   onCancelReply,
   onSendImage,
+  onSendFile,
 }: ChatInputProps) => {
   const { colors } = useTheme();
   const [text, setText] = useState("");
@@ -73,6 +76,25 @@ const ChatInput = ({
     } catch (error) {
       console.error("Error picking image:", error);
       Alert.alert("Error", "Failed to pick image");
+    }
+  };
+
+  const handlePickDocument = async () => {
+    if (!onSendFile) return;
+
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "*/*",
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        onSendFile(file.uri, file.name);
+      }
+    } catch (error) {
+      console.error("Error picking document:", error);
+      Alert.alert("Error", "Failed to pick document");
     }
   };
 
@@ -124,7 +146,7 @@ const ChatInput = ({
           },
         ]}
       >
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={handlePickDocument}>
           <Ionicons name="add-circle" size={28} color={colors.primary} />
         </TouchableOpacity>
 

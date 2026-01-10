@@ -22,7 +22,9 @@ export class ChatUseCases {
       senderId: string;
       senderName?: string;
     },
-    imageUrl?: string
+    imageUrl?: string,
+    fileUrl?: string,
+    voiceMessageUrl?: string
   ): Promise<Message> {
     const newMessage: Message = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -44,15 +46,39 @@ export class ChatUseCases {
       newMessage.imageUrl = imageUrl;
     }
 
+    if (fileUrl) {
+      newMessage.fileUrl = fileUrl;
+    }
+
+    if (voiceMessageUrl) {
+      newMessage.voiceMessageUrl = voiceMessageUrl;
+    }
+
     return await this.messageRepository.createMessage(newMessage);
   }
 
   async uploadImage(uri: string): Promise<string> {
-    // Simple path strategy: images/timestamp_random
     const path = `chat_images/${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`;
-    return await this.storageService.uploadImage(uri, path);
+    return await this.storageService.uploadImage(uri, path, "image");
+  }
+
+  async uploadFile(uri: string): Promise<string> {
+    const path = `chat_files/${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    // Use 'auto' to let Cloudinary detect the file type. 
+    // This often treats PDFs as page-able images which avoids strict 'raw' access controls.
+    return await this.storageService.uploadImage(uri, path, "auto");
+  }
+
+  async uploadVoiceMessage(uri: string): Promise<string> {
+    const path = `chat_voice/${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    // Cloudinary treats audio as 'video' resource type
+    return await this.storageService.uploadImage(uri, path, "video");
   }
 
   async getMessagesBetweenUsers(

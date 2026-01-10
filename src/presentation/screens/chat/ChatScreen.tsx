@@ -63,7 +63,7 @@ function ChatScreen() {
   // Message Options Overlay state
   const [selectedMessage, setSelectedMessage] =
     useState<SelectedMessageState | null>(null);
-  
+
   // Reply state
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
@@ -212,6 +212,40 @@ function ChatScreen() {
     }
   };
 
+  const handleSendFile = async (uri: string, name: string) => {
+    if (!authUser?.id) return;
+    const receiverId = isGroup ? groupId : userId;
+    if (!receiverId) return;
+
+    try {
+      // 1. Upload File
+      const fileUrl = await chatUseCases.uploadFile(uri);
+      console.log("Uploaded fileUrl:", fileUrl);
+
+      // 2. Send Message with File URL
+      const replyData = replyingTo
+        ? {
+            content: replyingTo.content,
+            senderId: replyingTo.senderId,
+            senderName: resolveSenderName(replyingTo.senderId),
+          }
+        : undefined;
+
+      await chatUseCases.sendMessage(
+        authUser.id,
+        receiverId,
+        `Sent a file: ${name}`, // Use file name as content
+        replyData,
+        undefined, // imageUrl
+        fileUrl
+      );
+      setReplyingTo(null);
+    } catch (error) {
+      console.error("Failed to send file:", error);
+      Alert.alert("Error", "Failed to send file. Please try again.");
+    }
+  };
+
   const handleTyping = (isTyping: boolean) => {
     if (!authUser?.id) return;
     const receiverId = isGroup ? groupId : userId;
@@ -337,33 +371,42 @@ function ChatScreen() {
         <FlatList
           data={messages}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <MessageBubble
-              text={item.content}
-              isMe={item.senderId === authUser?.id}
-              timestamp={formatTime(item.timestamp)}
-              senderName={resolveSenderName(item.senderId)}
-              reactions={item.reactions} // Pass reactions
-              replyTo={item.replyTo} // Pass reply info
-              imageUrl={item.imageUrl} // Pass image URL
-              onLongPress={(event) => handleMessageLongPress(item, event)} // New handler
-            />
-          )}
+          renderItem={({ item }) => {
+            // console.log("Render Item:", item.id, "File:", item.fileUrl);
+            return (
+              <MessageBubble
+                text={item.content}
+                isMe={item.senderId === authUser?.id}
+                timestamp={formatTime(item.timestamp)}
+                senderName={resolveSenderName(item.senderId)}
+                reactions={item.reactions} // Pass reactions
+                replyTo={item.replyTo} // Pass reply info
+                imageUrl={item.imageUrl} // Pass image URL
+                fileUrl={item.fileUrl} // Pass file URL
+                onLongPress={(event) => handleMessageLongPress(item, event)} // New handler
+              />
+            );
+          }}
           contentContainerStyle={styles.listContent}
           inverted
         />
 
         <TypingIndicator text={typingIndicatorText} />
 
-        <ChatInput 
-          onSend={handleSend} 
+        <ChatInput
+          onSend={handleSend}
           onTyping={handleTyping}
-          replyingTo={replyingTo ? {
-            content: replyingTo.content,
-            senderName: resolveSenderName(replyingTo.senderId)
-          } : null}
+          replyingTo={
+            replyingTo
+              ? {
+                  content: replyingTo.content,
+                  senderName: resolveSenderName(replyingTo.senderId),
+                }
+              : null
+          }
           onCancelReply={() => setReplyingTo(null)}
           onSendImage={handleSendImage}
+          onSendFile={handleSendFile}
         />
       </KeyboardAvoidingView>
 

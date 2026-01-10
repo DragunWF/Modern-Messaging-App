@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   GestureResponderEvent,
   Image,
+  Linking,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 import Message from "../../../domain/entities/message"; // Import Message entity type
 
@@ -23,6 +25,7 @@ interface MessageBubbleProps {
     senderName?: string;
   };
   imageUrl?: string; // New prop for image
+  fileUrl?: string; // New prop for file
   onLongPress?: (event: GestureResponderEvent) => void; // New prop for long press
 }
 
@@ -34,10 +37,20 @@ const MessageBubble = ({
   reactions,
   replyTo,
   imageUrl,
+  fileUrl,
   onLongPress,
 }: MessageBubbleProps) => {
   const { colors } = useTheme();
+  // console.log("MessageBubble props:", { text, fileUrl, isMe }); // Debug
   const hasReactions = reactions && Object.keys(reactions).length > 0;
+
+  const handleOpenFile = () => {
+    if (fileUrl) {
+      Linking.openURL(fileUrl).catch((err) =>
+        console.error("Failed to open URL:", err)
+      );
+    }
+  };
 
   return (
     <TouchableOpacity
@@ -113,13 +126,43 @@ const MessageBubble = ({
             />
           )}
 
+          {/* File Message */}
+          {fileUrl && (
+            <TouchableOpacity
+              style={[
+                styles.fileContainer,
+                {
+                  backgroundColor: "rgba(0,0,0,0.2)", // Make it darker
+                  borderColor: isMe ? colors.textInverse : colors.primary,
+                  borderWidth: 1,
+                },
+              ]}
+              onPress={handleOpenFile}
+            >
+              <Ionicons
+                name="attach" // Use 'attach' which is universally safe
+                size={24}
+                color={isMe ? colors.textInverse : colors.textPrimary}
+              />
+              <Text
+                style={[
+                  styles.fileText,
+                  { color: isMe ? colors.textInverse : colors.textPrimary },
+                ]}
+                numberOfLines={1}
+              >
+                Attachment
+              </Text>
+            </TouchableOpacity>
+          )}
+
           {/* Text Message (Only show if not empty or specific placeholder) */}
-          {text && text !== "Sent an image" && (
+          {text && text !== "Sent an image" && text !== "Sent a file" && (
             <Text
               style={[
                 styles.text,
                 { color: isMe ? colors.textInverse : colors.textPrimary },
-                imageUrl && { marginTop: 4 }, // Add margin if image exists
+                (imageUrl || fileUrl) && { marginTop: 4 }, // Add margin if image/file exists
               ]}
             >
               {text.trim()}
@@ -258,6 +301,21 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 10,
     marginBottom: 2,
+  },
+  // New Styles for File
+  fileContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 2,
+    minWidth: 150,
+  },
+  fileText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: "500",
+    flex: 1,
   },
 });
 
