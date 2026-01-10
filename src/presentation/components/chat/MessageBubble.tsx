@@ -74,7 +74,7 @@ const MessageBubble = ({
               styles.reactionPill,
               {
                 backgroundColor: isMe ? colors.primarySoft : colors.background,
-                borderColor: isMe ? colors.primary : colors.border,
+                borderColor: isMe ? colors.primarySoft : colors.background,
               },
               isMe ? styles.reactionPillMe : styles.reactionPillThem,
             ]}
