@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   Dimensions, // Added Dimensions
   ViewStyle, // Added ViewStyle
+  Alert, // Added Alert
 } from "react-native";
 import {
   useRoute,
@@ -62,7 +63,7 @@ function ChatScreen() {
   // Message Options Overlay state
   const [selectedMessage, setSelectedMessage] =
     useState<SelectedMessageState | null>(null);
-
+  
   // Reply state
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
@@ -174,6 +175,40 @@ function ChatScreen() {
       setReplyingTo(null); // Clear reply state after sending
     } catch (error) {
       console.error("Failed to send message:", error);
+    }
+  };
+
+  const handleSendImage = async (uri: string) => {
+    if (!authUser?.id) return;
+    const receiverId = isGroup ? groupId : userId;
+    if (!receiverId) return;
+
+    try {
+      // 1. Upload Image
+      // You might want to show a "Sending..." indicator here
+      const imageUrl = await chatUseCases.uploadImage(uri);
+
+      // 2. Send Message with Image URL
+      const replyData = replyingTo
+        ? {
+            content: replyingTo.content,
+            senderId: replyingTo.senderId,
+            senderName: resolveSenderName(replyingTo.senderId),
+          }
+        : undefined;
+
+      // We use "Sent an image" as the text content fallback
+      await chatUseCases.sendMessage(
+        authUser.id,
+        receiverId,
+        "Sent an image",
+        replyData,
+        imageUrl
+      );
+      setReplyingTo(null);
+    } catch (error) {
+      console.error("Failed to send image:", error);
+      Alert.alert("Error", "Failed to send image. Please try again.");
     }
   };
 
@@ -310,6 +345,7 @@ function ChatScreen() {
               senderName={resolveSenderName(item.senderId)}
               reactions={item.reactions} // Pass reactions
               replyTo={item.replyTo} // Pass reply info
+              imageUrl={item.imageUrl} // Pass image URL
               onLongPress={(event) => handleMessageLongPress(item, event)} // New handler
             />
           )}
@@ -319,18 +355,15 @@ function ChatScreen() {
 
         <TypingIndicator text={typingIndicatorText} />
 
-        <ChatInput
-          onSend={handleSend}
+        <ChatInput 
+          onSend={handleSend} 
           onTyping={handleTyping}
-          replyingTo={
-            replyingTo
-              ? {
-                  content: replyingTo.content,
-                  senderName: resolveSenderName(replyingTo.senderId),
-                }
-              : null
-          }
+          replyingTo={replyingTo ? {
+            content: replyingTo.content,
+            senderName: resolveSenderName(replyingTo.senderId)
+          } : null}
           onCancelReply={() => setReplyingTo(null)}
+          onSendImage={handleSendImage}
         />
       </KeyboardAvoidingView>
 

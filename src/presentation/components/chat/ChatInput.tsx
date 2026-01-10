@@ -6,8 +6,10 @@ import {
   StyleSheet,
   Text,
   Platform,
+  Alert,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "../../context/ThemeContext";
 
 interface ChatInputProps {
@@ -15,6 +17,7 @@ interface ChatInputProps {
   onTyping?: (isTyping: boolean) => void;
   replyingTo?: { content: string; senderName?: string } | null;
   onCancelReply?: () => void;
+  onSendImage?: (uri: string) => void;
 }
 
 const ChatInput = ({
@@ -22,6 +25,7 @@ const ChatInput = ({
   onTyping,
   replyingTo,
   onCancelReply,
+  onSendImage,
 }: ChatInputProps) => {
   const { colors } = useTheme();
   const [text, setText] = useState("");
@@ -53,6 +57,25 @@ const ChatInput = ({
     }
   };
 
+  const handlePickImage = async () => {
+    if (!onSendImage) return;
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        onSendImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to pick image");
+    }
+  };
+
   return (
     <View style={{ backgroundColor: colors.background }}>
       {/* Reply Preview */}
@@ -81,7 +104,11 @@ const ChatInput = ({
             </Text>
           </View>
           <TouchableOpacity onPress={onCancelReply} style={styles.closeButton}>
-            <Ionicons name="close-circle" size={24} color={colors.textSecondary} />
+            <Ionicons
+              name="close-circle"
+              size={24}
+              color={colors.textSecondary}
+            />
           </TouchableOpacity>
         </View>
       )}
@@ -101,7 +128,7 @@ const ChatInput = ({
           <Ionicons name="add-circle" size={28} color={colors.primary} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={handlePickImage}>
           <Ionicons name="image-outline" size={26} color={colors.primary} />
         </TouchableOpacity>
 

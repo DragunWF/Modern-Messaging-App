@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
+import { getStorage } from "firebase/storage";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -20,3 +21,4 @@ const app = initializeApp(firebaseConfig);
 // Export the necessary Firebase services
 export const auth = getAuth(app);
 export const rtdb = getDatabase(app); // Export Realtime Database
+export const storage = getStorage(app); // Export Firebase Storage

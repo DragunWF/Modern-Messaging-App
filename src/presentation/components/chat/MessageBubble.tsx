@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   GestureResponderEvent,
+  Image,
 } from "react-native";
 import { useTheme } from "../../context/ThemeContext";
 import Message from "../../../domain/entities/message"; // Import Message entity type
@@ -21,6 +22,7 @@ interface MessageBubbleProps {
     senderId: string;
     senderName?: string;
   };
+  imageUrl?: string; // New prop for image
   onLongPress?: (event: GestureResponderEvent) => void; // New prop for long press
 }
 
@@ -31,6 +33,7 @@ const MessageBubble = ({
   senderName,
   reactions,
   replyTo,
+  imageUrl,
   onLongPress,
 }: MessageBubbleProps) => {
   const { colors } = useTheme();
@@ -70,7 +73,9 @@ const MessageBubble = ({
               style={[
                 styles.replyContainer,
                 {
-                  backgroundColor: isMe ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.05)",
+                  backgroundColor: isMe
+                    ? "rgba(0,0,0,0.1)"
+                    : "rgba(0,0,0,0.05)",
                   borderLeftColor: isMe ? colors.textInverse : colors.primary,
                 },
               ]}
@@ -99,14 +104,27 @@ const MessageBubble = ({
             </View>
           )}
 
-          <Text
-            style={[
-              styles.text,
-              { color: isMe ? colors.textInverse : colors.textPrimary },
-            ]}
-          >
-            {text.trim()}
-          </Text>
+          {/* Image Message */}
+          {imageUrl && (
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.messageImage}
+              resizeMode="cover"
+            />
+          )}
+
+          {/* Text Message (Only show if not empty or specific placeholder) */}
+          {text && text !== "Sent an image" && (
+            <Text
+              style={[
+                styles.text,
+                { color: isMe ? colors.textInverse : colors.textPrimary },
+                imageUrl && { marginTop: 4 }, // Add margin if image exists
+              ]}
+            >
+              {text.trim()}
+            </Text>
+          )}
         </View>
 
         {hasReactions && (
@@ -233,6 +251,13 @@ const styles = StyleSheet.create({
   },
   replyText: {
     fontSize: 12,
+  },
+  // New Styles for Image
+  messageImage: {
+    width: 200,
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 2,
   },
 });
 

@@ -1,6 +1,7 @@
 import IMessageRepository from "../interfaces/iMessageRepository";
 import IGroupChatRepository from "../interfaces/iGroupChatRepository";
 import IUserRepository from "../interfaces/iUserRepository";
+import { IStorageService } from "../interfaces/iStorageService";
 import Message from "../../domain/entities/message";
 import GroupChat from "../../domain/entities/groupChat";
 
@@ -8,7 +9,8 @@ export class ChatUseCases {
   constructor(
     private messageRepository: IMessageRepository,
     private groupChatRepository: IGroupChatRepository,
-    private userRepository: IUserRepository
+    private userRepository: IUserRepository,
+    private storageService: IStorageService
   ) {}
 
   async sendMessage(
@@ -19,7 +21,8 @@ export class ChatUseCases {
       content: string;
       senderId: string;
       senderName?: string;
-    }
+    },
+    imageUrl?: string
   ): Promise<Message> {
     const newMessage: Message = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -31,9 +34,25 @@ export class ChatUseCases {
       isDeleted: false,
       isForwarded: false,
       reactions: {},
-      replyTo,
     };
+
+    if (replyTo) {
+      newMessage.replyTo = replyTo;
+    }
+
+    if (imageUrl) {
+      newMessage.imageUrl = imageUrl;
+    }
+
     return await this.messageRepository.createMessage(newMessage);
+  }
+
+  async uploadImage(uri: string): Promise<string> {
+    // Simple path strategy: images/timestamp_random
+    const path = `chat_images/${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    return await this.storageService.uploadImage(uri, path);
   }
 
   async getMessagesBetweenUsers(
