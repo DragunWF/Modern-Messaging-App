@@ -50,7 +50,7 @@
 - [ ] Message forwarding feature
 - [x] Message replies feature
 - [x] Message reactions feature
-- [ ] Image messaging feature
+- [x] Image messaging feature
 - [ ] File messaging feature
 - [ ] Voice messaging feature
 - [x] Typing indicators
