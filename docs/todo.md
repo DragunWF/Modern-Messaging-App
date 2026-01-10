@@ -48,7 +48,7 @@
 - [x] Basic text messaging feature
 - [x] Copy text feature
 - [ ] Message forwarding feature
-- [ ] Message replies feature
+- [x] Message replies feature
 - [x] Message reactions feature
 - [ ] Image messaging feature
 - [ ] File messaging feature
