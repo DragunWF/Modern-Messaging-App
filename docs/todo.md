@@ -58,9 +58,9 @@
   - [ ] UI layout
   - [ ] Rename group chat feature
   - [ ] Remove user feature
-- [ ] Friend profile
+- [x] Friend profile
   - [x] UI layout
-  - [ ] Remove friend feature
+  - [x] Remove friend feature
 
 ### User Profile
 
