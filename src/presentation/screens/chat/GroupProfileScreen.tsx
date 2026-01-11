@@ -96,6 +96,11 @@ function GroupProfileScreen() {
     }
   };
 
+  const handleAddMemberPress = () => {
+    console.log("Add Member button pressed");
+    // Functionality to be implemented later
+  };
+
   if (!groupChat) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -132,6 +137,19 @@ function GroupProfileScreen() {
             <Ionicons name="pencil" size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
+
+        {/* Add Member Button */}
+        <TouchableOpacity
+          style={[styles.addMemberButton, { backgroundColor: colors.primary }]}
+          onPress={handleAddMemberPress}
+        >
+          <Ionicons name="person-add" size={20} color={colors.textInverse} />
+          <Text
+            style={[styles.addMemberButtonText, { color: colors.textInverse }]}
+          >
+            Add Member
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Members Section */}
@@ -187,6 +205,24 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginRight: 10,
   },
+  addMemberButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    marginTop: 7,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  addMemberButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 10,
+  },
   membersHeader: {
     paddingHorizontal: 15,
     paddingVertical: 10,
@@ -196,6 +232,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   memberListContent: {
+    marginTop: 8,
     paddingHorizontal: 15,
     paddingBottom: 20,
   },
