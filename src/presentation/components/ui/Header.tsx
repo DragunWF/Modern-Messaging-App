@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  StatusBar,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../../context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,6 +25,13 @@ const Header: React.FC<HeaderProps> = ({
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
 
+  const getPaddingTop = () => {
+    if (Platform.OS === "android") {
+      return (insets.top > 0 ? insets.top : StatusBar.currentHeight ?? 0) + 10;
+    }
+    return insets.top > 0 ? insets.top + 10 : 15;
+  };
+
   return (
     <View
       style={[
@@ -25,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({
         {
           backgroundColor: colors.backgroundCard,
           borderBottomColor: colors.border,
-          paddingTop: insets.top > 0 ? insets.top + 10 : 15,
+          paddingTop: getPaddingTop(),
         },
       ]}
     >

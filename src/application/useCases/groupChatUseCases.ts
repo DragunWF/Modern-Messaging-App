@@ -35,6 +35,75 @@ export class GroupChatUseCases {
     }
   }
 
+  async getGroupChatById(id: string): Promise<GroupChat | null> {
+    try {
+      return await this.groupChatRepository.getGroupChatById(id);
+    } catch (error) {
+      console.error("Error getting group chat by id:", error);
+      return null;
+    }
+  }
+
+  async renameGroupChat(groupId: string, newName: string): Promise<void> {
+    try {
+      const groupChat = await this.groupChatRepository.getGroupChatById(groupId);
+      if (!groupChat) throw new Error("Group chat not found");
+
+      const updatedGroupChat: GroupChat = {
+        ...groupChat,
+        name: newName,
+      };
+
+      await this.groupChatRepository.updateGroupChat(updatedGroupChat);
+    } catch (error) {
+      console.error("Error renaming group chat:", error);
+      throw error;
+    }
+  }
+
+  async addMembersToGroup(groupId: string, newMemberIds: string[]): Promise<void> {
+    try {
+      const groupChat = await this.groupChatRepository.getGroupChatById(groupId);
+      if (!groupChat) throw new Error("Group chat not found");
+
+      // Combine existing and new members, ensuring uniqueness
+      const updatedMemberIds = Array.from(
+        new Set([...groupChat.memberIds, ...newMemberIds])
+      );
+
+      const updatedGroupChat: GroupChat = {
+        ...groupChat,
+        memberIds: updatedMemberIds,
+      };
+
+      await this.groupChatRepository.updateGroupChat(updatedGroupChat);
+    } catch (error) {
+      console.error("Error adding members to group:", error);
+      throw error;
+    }
+  }
+
+  async removeMemberFromGroup(groupId: string, memberIdToRemove: string): Promise<void> {
+    try {
+      const groupChat = await this.groupChatRepository.getGroupChatById(groupId);
+      if (!groupChat) throw new Error("Group chat not found");
+
+      const updatedMemberIds = groupChat.memberIds.filter(
+        (id) => id !== memberIdToRemove
+      );
+
+      const updatedGroupChat: GroupChat = {
+        ...groupChat,
+        memberIds: updatedMemberIds,
+      };
+
+      await this.groupChatRepository.updateGroupChat(updatedGroupChat);
+    } catch (error) {
+      console.error("Error removing member from group:", error);
+      throw error;
+    }
+  }
+
   subscribeToGroupChats(
     userId: string,
     callback: (groupChats: GroupChat[]) => void

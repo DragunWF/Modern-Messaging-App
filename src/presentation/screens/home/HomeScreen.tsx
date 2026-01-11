@@ -195,7 +195,7 @@ function HomeScreen() {
 
   const handleGroupPress = (groupId: string) => {
     navigation.navigate(NAVIGATOR_NAMES.ChatNavigator, {
-      screen: CHAT_SCREEN_NAMES.GroupChat,
+      screen: CHAT_SCREEN_NAMES.Chat,
       params: { groupId },
     });
   };

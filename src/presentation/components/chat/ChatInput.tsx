@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -11,6 +11,7 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
+import { Audio } from "expo-av";
 import { useTheme } from "../../context/ThemeContext";
 
 interface ChatInputProps {
@@ -20,6 +21,7 @@ interface ChatInputProps {
   onCancelReply?: () => void;
   onSendImage?: (uri: string) => void;
   onSendFile?: (uri: string, name: string) => void;
+  onSendVoiceMessage?: (uri: string) => void; // New prop for voice messages
 }
 
 const ChatInput = ({
@@ -29,10 +31,25 @@ const ChatInput = ({
   onCancelReply,
   onSendImage,
   onSendFile,
+  onSendVoiceMessage,
 }: ChatInputProps) => {
   const { colors } = useTheme();
   const [text, setText] = useState("");
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Audio Recording State
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [permissionResponse, requestPermission] = Audio.usePermissions();
+
+  useEffect(() => {
+    return () => {
+      // Cleanup: stop recording if unmounted
+      if (recording) {
+        recording.stopAndUnloadAsync();
+      }
+    };
+  }, [recording]);
 
   const handleSend = () => {
     if (text.trim().length === 0) return;
@@ -98,6 +115,61 @@ const ChatInput = ({
     }
   };
 
+  // --- Voice Recording Logic ---
+
+  const startRecording = async () => {
+    try {
+      if (permissionResponse?.status !== "granted") {
+        console.log("Requesting permission..");
+        const perm = await requestPermission();
+        if (perm.status !== "granted") {
+          Alert.alert(
+            "Permission Required",
+            "Microphone permission is required to record voice messages."
+          );
+          return;
+        }
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      console.log("Starting recording..");
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      setRecording(recording);
+      setIsRecording(true);
+      console.log("Recording started");
+    } catch (err) {
+      console.error("Failed to start recording", err);
+      Alert.alert("Error", "Failed to start recording.");
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!recording) return;
+
+    console.log("Stopping recording..");
+    setIsRecording(false);
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      console.log("Recording stopped and stored at", uri);
+
+      setRecording(null); // Reset recording object
+
+      if (uri && onSendVoiceMessage) {
+        // Simple validation: Ensure duration was long enough if possible (optional)
+        onSendVoiceMessage(uri);
+      }
+    } catch (error) {
+      console.error("Failed to stop recording", error);
+    }
+  };
+
   return (
     <View style={{ backgroundColor: colors.background }}>
       {/* Reply Preview */}
@@ -146,35 +218,54 @@ const ChatInput = ({
           },
         ]}
       >
-        <TouchableOpacity style={styles.iconButton} onPress={handlePickDocument}>
-          <Ionicons name="add-circle" size={28} color={colors.primary} />
-        </TouchableOpacity>
+        {/* Hide attachment buttons while recording */}
+        {!isRecording && (
+          <>
+            <TouchableOpacity style={styles.iconButton} onPress={handlePickDocument}>
+              <Ionicons name="add-circle" size={28} color={colors.primary} />
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.iconButton} onPress={handlePickImage}>
-          <Ionicons name="image-outline" size={26} color={colors.primary} />
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={handlePickImage}>
+              <Ionicons name="image-outline" size={26} color={colors.primary} />
+            </TouchableOpacity>
+          </>
+        )}
 
         <View
           style={[
             styles.inputWrapper,
             { backgroundColor: colors.backgroundInput },
+            isRecording && { backgroundColor: colors.error + "20" }, // Light red tint when recording
           ]}
         >
-          <TextInput
-            style={[styles.input, { color: colors.textPrimary }]}
-            placeholder="Message..."
-            placeholderTextColor={colors.textPlaceholder}
-            multiline
-            value={text}
-            onChangeText={handleChangeText}
-          />
-          <TouchableOpacity style={styles.emojiButton}>
-            <MaterialIcons
-              name="emoji-emotions"
-              size={24}
-              color={colors.primary}
-            />
-          </TouchableOpacity>
+          {isRecording ? (
+            <View style={styles.recordingContainer}>
+              <View
+                style={[styles.recordingDot, { backgroundColor: colors.error }]}
+              />
+              <Text style={[styles.recordingText, { color: colors.error }]}>
+                Recording... Release to send
+              </Text>
+            </View>
+          ) : (
+            <>
+              <TextInput
+                style={[styles.input, { color: colors.textPrimary }]}
+                placeholder="Message..."
+                placeholderTextColor={colors.textPlaceholder}
+                multiline
+                value={text}
+                onChangeText={handleChangeText}
+              />
+              <TouchableOpacity style={styles.emojiButton}>
+                <MaterialIcons
+                  name="emoji-emotions"
+                  size={24}
+                  color={colors.primary}
+                />
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         {text.trim().length > 0 ? (
@@ -182,8 +273,20 @@ const ChatInput = ({
             <Ionicons name="send" size={24} color={colors.primary} />
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="mic-outline" size={26} color={colors.primary} />
+          <TouchableOpacity
+            style={[
+              styles.iconButton,
+              isRecording && { transform: [{ scale: 1.2 }] }, // visual feedback
+            ]}
+            onPressIn={startRecording}
+            onPressOut={stopRecording}
+            // Long press logic usually works better with PressIn/PressOut
+          >
+            <Ionicons
+              name={isRecording ? "mic" : "mic-outline"}
+              size={26}
+              color={isRecording ? colors.error : colors.primary}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -255,6 +358,22 @@ const styles = StyleSheet.create({
   sendButton: {
     padding: 6,
     marginBottom: 2,
+  },
+  recordingContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  recordingDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  recordingText: {
+    fontSize: 16,
+    fontWeight: "500",
   },
 });
 

@@ -82,9 +82,15 @@ class UserRepository implements IUserRepository {
     }
   }
 
-  async updateUserFriendsList(userId: string, friendIds: string[]): Promise<void> {
+  async updateUserFriendsList(
+    userId: string,
+    friendIds: string[]
+  ): Promise<void> {
     try {
-      const userFriendsRef = ref(rtdb, `${UserRepository.collectionName}/${userId}/friends`);
+      const userFriendsRef = ref(
+        rtdb,
+        `${UserRepository.collectionName}/${userId}/friends`
+      );
       await set(userFriendsRef, friendIds);
     } catch (error) {
       console.error("Error updating user friends list:", error);
@@ -174,15 +180,19 @@ class UserRepository implements IUserRepository {
       const currentFriendIds: string[] = snapshot.exists()
         ? (snapshot.val() as string[])
         : [];
-        
-      console.log(`[subscribeToFriends] onFriendsListChange: count=${currentFriendIds.length}, ids=${currentFriendIds}`);
+
+      console.log(
+        `[subscribeToFriends] onFriendsListChange: count=${currentFriendIds.length}, ids=${currentFriendIds}`
+      );
 
       let hasChanges = false;
 
       // 1. Identify friends to remove (present in listeners but not in new list)
       for (const [friendId, listener] of friendListeners) {
         if (!currentFriendIds.includes(friendId)) {
-          console.log(`[subscribeToFriends] Removing friend listener: ${friendId}`);
+          console.log(
+            `[subscribeToFriends] Removing friend listener: ${friendId}`
+          );
           off(listener.ref, "value", listener.callback);
           friendListeners.delete(friendId);
           friendsMap.delete(friendId);
@@ -193,7 +203,9 @@ class UserRepository implements IUserRepository {
       // 2. Identify new friends to add (present in new list but not in listeners)
       currentFriendIds.forEach((friendId) => {
         if (!friendListeners.has(friendId)) {
-          console.log(`[subscribeToFriends] Adding friend listener: ${friendId}`);
+          console.log(
+            `[subscribeToFriends] Adding friend listener: ${friendId}`
+          );
           const friendRef = child(
             dbRef,
             `${UserRepository.collectionName}/${friendId}`
@@ -208,7 +220,9 @@ class UserRepository implements IUserRepository {
             }
             // Emit updated list whenever any friend's data changes
             const updatedList = Array.from(friendsMap.values());
-            console.log(`[subscribeToFriends] onFriendChange emitted ${updatedList.length} friends`);
+            console.log(
+              `[subscribeToFriends] onFriendChange emitted ${updatedList.length} friends`
+            );
             callback(updatedList);
           };
 
@@ -224,7 +238,9 @@ class UserRepository implements IUserRepository {
       // we must emit the new state immediately.
       if (hasChanges || currentFriendIds.length === 0) {
         const updatedList = Array.from(friendsMap.values());
-        console.log(`[subscribeToFriends] onFriendsListChange emitted ${updatedList.length} friends (hasChanges=${hasChanges})`);
+        console.log(
+          `[subscribeToFriends] onFriendsListChange emitted ${updatedList.length} friends (hasChanges=${hasChanges})`
+        );
         callback(updatedList);
       }
     };
@@ -250,8 +266,7 @@ class UserRepository implements IUserRepository {
     const onUserChange = (snapshot: any) => {
       if (snapshot.exists()) {
         callback(snapshot.val() as User);
-      }
-      else {
+      } else {
         callback(null);
       }
     };
@@ -277,4 +292,3 @@ class UserRepository implements IUserRepository {
 }
 
 export default UserRepository;
-

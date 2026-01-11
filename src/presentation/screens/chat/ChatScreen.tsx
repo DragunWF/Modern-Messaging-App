@@ -11,6 +11,7 @@ import {
   Dimensions,
   ViewStyle,
   Alert,
+  StatusBar,
 } from "react-native";
 import {
   useRoute,
@@ -43,7 +44,7 @@ function ChatScreen() {
   const navigation = useNavigation();
   const route = useRoute<any>();
   const { user: authUser } = useAuth();
-  const { chatUseCases, userUseCases } = useService();
+  const { chatUseCases, userUseCases, groupChatUseCases } = useService();
   const { height: screenHeight } = Dimensions.get("window"); // Get screen dimensions
 
   // Extract params
@@ -53,6 +54,7 @@ function ChatScreen() {
   // State
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatPartner, setChatPartner] = useState<User | null>(null);
+  const [groupChat, setGroupChat] = useState<GroupChat | null>(null);
 
   // Cache for resolving sender names: userId -> username
   const [sendersCache, setSendersCache] = useState<Record<string, string>>({});
@@ -77,8 +79,10 @@ function ChatScreen() {
     null
   );
 
-  // Fetch Chat Info (User)
+  // Fetch Chat Info (User or Group)
   useEffect(() => {
+    let unsubscribeGroup: (() => void) | undefined;
+
     const fetchDetails = async () => {
       if (!isGroup && userId) {
         const user = await userUseCases.getUserById(userId);
@@ -86,7 +90,25 @@ function ChatScreen() {
         if (user) {
           setSendersCache((prev) => ({ ...prev, [user.id]: user.username }));
         }
+      } else if (isGroup && groupId) {
+        // Initial fetch
+        const group = await groupChatUseCases.getGroupChatById(groupId);
+        setGroupChat(group);
+
+        // Subscribe to group updates for real-time name changes
+        if (authUser?.id) {
+          unsubscribeGroup = groupChatUseCases.subscribeToGroupChats(
+            authUser.id,
+            (groups) => {
+              const updatedGroup = groups.find((g) => g.id === groupId);
+              if (updatedGroup) {
+                setGroupChat(updatedGroup);
+              }
+            }
+          );
+        }
       }
+
       // If authUser is available, cache their name too
       if (authUser) {
         setSendersCache((prev) => ({
@@ -96,7 +118,13 @@ function ChatScreen() {
       }
     };
     fetchDetails();
-  }, [userId, isGroup, authUser]);
+
+    return () => {
+      if (unsubscribeGroup) {
+        unsubscribeGroup();
+      }
+    };
+  }, [userId, isGroup, groupId, authUser, userUseCases, groupChatUseCases]);
 
   // Subscribe to Messages
   useEffect(() => {
@@ -266,7 +294,9 @@ function ChatScreen() {
       .catch((err) => console.error("Error sending typing status", err));
   };
 
-  const chatTitle = isGroup ? "Group Chat" : chatPartner?.username || "Chat";
+  const chatTitle = isGroup
+    ? groupChat?.name || "Group Chat"
+    : chatPartner?.username || "Chat";
 
   // Default subtitle for header (online status for 1-on-1, empty for groups)
   const chatHeaderSubtitle = isGroup
@@ -383,8 +413,10 @@ function ChatScreen() {
     if (!isGroup && userId) {
       // @ts-ignore
       navigation.navigate(CHAT_SCREEN_NAMES.UserProfile, { userId: userId });
+    } else if (isGroup && groupId) {
+      // @ts-ignore
+      navigation.navigate(CHAT_SCREEN_NAMES.GroupProfile, { groupId: groupId });
     }
-    // For group chat, we will implement GroupProfileScreen navigation later
   };
 
   // Calculate overlay positions dynamically
@@ -409,17 +441,59 @@ function ChatScreen() {
     };
   };
 
+  const handleSendVoiceMessage = async (uri: string) => {
+    if (!authUser?.id) return;
+    const receiverId = isGroup ? groupId : userId;
+    if (!receiverId) return;
+
+    try {
+      // 1. Upload Voice Message
+      console.log("Uploading voice message...", uri);
+      const voiceUrl = await chatUseCases.uploadVoiceMessage(uri);
+      console.log("Voice message uploaded:", voiceUrl);
+
+      // 2. Send Message
+      const replyData = replyingTo
+        ? {
+            content: replyingTo.content,
+            senderId: replyingTo.senderId,
+            senderName: resolveSenderName(replyingTo.senderId),
+          }
+        : undefined;
+
+      await chatUseCases.sendMessage(
+        authUser.id,
+        receiverId,
+        "Voice Message", // Fallback text content
+        replyData,
+        undefined, // imageUrl
+        undefined, // fileUrl
+        voiceUrl // voiceMessageUrl
+      );
+      setReplyingTo(null);
+    } catch (error) {
+      console.error("Failed to send voice message:", error);
+      Alert.alert("Error", "Failed to send voice message.");
+    }
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <ChatHeader
-        title={chatTitle}
-        subtitle={chatHeaderSubtitle}
-        onBackPress={() => navigation.goBack()}
-        onProfilePress={handleChatHeaderProfilePress}
-        showProfileImage={!isGroup} // Only show profile image/make clickable for 1-on-1 chats
-      />
+      <View
+        style={
+          Platform.OS === "android" ? styles.androidStatusBarOffset : undefined
+        }
+      >
+        <ChatHeader
+          title={chatTitle}
+          subtitle={chatHeaderSubtitle}
+          onBackPress={() => navigation.goBack()}
+          onProfilePress={handleChatHeaderProfilePress}
+          // Removed showProfileImage prop to use default (true)
+        />
+      </View>
 
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
@@ -441,6 +515,7 @@ function ChatScreen() {
                 replyTo={item.replyTo} // Pass reply info
                 imageUrl={item.imageUrl} // Pass image URL
                 fileUrl={item.fileUrl} // Pass file URL
+                voiceMessageUrl={item.voiceMessageUrl} // Pass voice message URL
                 onLongPress={(event) => handleMessageLongPress(item, event)} // New handler
                 isForwarded={item.isForwarded} // Pass forwarded status
               />
@@ -466,6 +541,7 @@ function ChatScreen() {
           onCancelReply={() => setReplyingTo(null)}
           onSendImage={handleSendImage}
           onSendFile={handleSendFile}
+          onSendVoiceMessage={handleSendVoiceMessage}
         />
       </KeyboardAvoidingView>
 
@@ -509,6 +585,9 @@ function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  androidStatusBarOffset: {
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   keyboardAvoidingView: {
     flex: 1,

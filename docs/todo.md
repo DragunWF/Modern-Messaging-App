@@ -52,12 +52,13 @@
 - [x] Message reactions feature
 - [x] Image messaging feature
 - [x] File messaging feature
-- [ ] Voice messaging feature
+- [x] Voice messaging feature
 - [x] Typing indicators
-- [ ] Group profile
-  - [ ] UI layout
-  - [ ] Rename group chat feature
-  - [ ] Remove user feature
+- [x] Group profile
+  - [x] UI layout
+  - [x] Add group member feature
+  - [x] Rename group chat feature
+  - [x] Remove group member feature
 - [x] Friend profile
   - [x] UI layout
   - [x] Remove friend feature
