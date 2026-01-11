@@ -3,6 +3,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import Button from "../../components/ui/Button";
+import Header from "../../components/ui/Header";
 
 interface ProfileScreenProps {
   navigation: any;
@@ -15,10 +16,12 @@ function ProfileScreen({ navigation }: ProfileScreenProps) {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
       backgroundColor: colors.background,
-      padding: 20,
+    },
+    profileContent: {
+      flex: 1,
+      alignItems: "center",
+      paddingTop: 50,
     },
     profileIcon: {
       marginBottom: 20,
@@ -33,33 +36,31 @@ function ProfileScreen({ navigation }: ProfileScreenProps) {
       fontSize: 18,
       color: colors.textSecondary,
     },
-    button: {
-      marginTop: 20,
-      marginHorizontal: 40,
-    },
   });
-
-  const handleBackBtn = () => {
-    navigation.goBack();
-  };
 
   return (
     <View style={styles.container}>
-      {user ? (
-        <>
-          <FontAwesome
-            name="user-circle"
-            size={100}
-            color={colors.primary}
-            style={styles.profileIcon}
-          />
-          <Text style={styles.username}>{user.username}</Text>
-          <Text style={styles.email}>{user.email}</Text>
-        </>
-      ) : (
-        <Text>Loading profile...</Text>
-      )}
-      <Button title="Go Back" style={styles.button} onPress={handleBackBtn} />
+      <Header
+        title="Profile"
+        onBackPress={() => navigation.goBack()}
+        rightComponent={null}
+      />
+      <View style={styles.profileContent}>
+        {user ? (
+          <>
+            <FontAwesome
+              name="user-circle"
+              size={100}
+              color={colors.primary}
+              style={styles.profileIcon}
+            />
+            <Text style={styles.username}>{user.username}</Text>
+            <Text style={styles.email}>{user.email}</Text>
+          </>
+        ) : (
+          <Text>Loading profile...</Text>
+        )}
+      </View>
     </View>
   );
 }
