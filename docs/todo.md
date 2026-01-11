@@ -47,7 +47,7 @@
 - [x] UI layout
 - [x] Basic text messaging feature
 - [x] Copy text feature
-- [ ] Message forwarding feature
+- [x] Message forwarding feature
 - [x] Message replies feature
 - [x] Message reactions feature
 - [x] Image messaging feature
