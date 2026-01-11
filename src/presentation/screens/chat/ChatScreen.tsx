@@ -24,8 +24,9 @@ import ChatHeader from "../../components/chat/ChatHeader";
 import MessageBubble from "../../components/chat/MessageBubble";
 import ChatInput from "../../components/chat/ChatInput";
 import TypingIndicator from "../../components/chat/TypingIndicator";
-import ReactionPicker from "../../components/chat/ReactionPicker"; // Import new component
-import MessageActionsOverlay from "../../components/chat/MessageActionsOverlay"; // Import new component
+import ReactionPicker from "../../components/chat/ReactionPicker";
+import MessageActionsOverlay from "../../components/chat/MessageActionsOverlay";
+import ForwardSelectionModal from "../../components/chat/ForwardSelectionModal";
 import Message from "../../../domain/entities/message";
 import User from "../../../domain/entities/user";
 import GroupChat from "../../../domain/entities/groupChat";
@@ -66,6 +67,12 @@ function ChatScreen() {
 
   // Reply state
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+
+  // Forward state
+  const [forwardModalVisible, setForwardModalVisible] = useState(false);
+  const [myFriends, setMyFriends] = useState<User[]>([]);
+  const [myGroups, setMyGroups] = useState<GroupChat[]>([]);
+  const [messageToForward, setMessageToForward] = useState<Message | null>(null);
 
   // Fetch Chat Info (User)
   useEffect(() => {
@@ -323,12 +330,41 @@ function ChatScreen() {
     handleCloseOverlay();
   }, [selectedMessage?.message, handleCloseOverlay]);
 
-  const handleForward = useCallback(() => {
-    if (!selectedMessage?.message) return;
-    console.log(`Forward message: ${selectedMessage.message.id}`);
-    // TODO: Implement forward feature
+  const handleForward = useCallback(async () => {
+    if (!selectedMessage?.message || !authUser?.id) return;
+    
+    // Store message to forward
+    setMessageToForward(selectedMessage.message);
+    
+    // Close overlay
     handleCloseOverlay();
-  }, [selectedMessage?.message, handleCloseOverlay]);
+
+    // Fetch friends and groups
+    try {
+      const friends = await userUseCases.searchFriendsOfUser(authUser.id, "");
+      const groups = await chatUseCases.getUserGroupChats(authUser.id);
+      setMyFriends(friends);
+      setMyGroups(groups);
+      setForwardModalVisible(true);
+    } catch (error) {
+      console.error("Error loading forward targets:", error);
+      Alert.alert("Error", "Could not load friends or groups.");
+    }
+  }, [selectedMessage?.message, authUser?.id, handleCloseOverlay, userUseCases, chatUseCases]);
+
+  const handleSendForward = async (targetIds: string[]) => {
+    if (!authUser?.id || !messageToForward) return;
+
+    try {
+      await chatUseCases.forwardMessage(authUser.id, targetIds, messageToForward);
+      Alert.alert("Success", "Message forwarded!");
+    } catch (error) {
+      console.error("Error forwarding message:", error);
+      Alert.alert("Error", "Failed to forward message.");
+    } finally {
+      setMessageToForward(null);
+    }
+  };
 
   // Calculate overlay positions dynamically
   const getReactionPickerPosition = (): ViewStyle => {
@@ -384,6 +420,7 @@ function ChatScreen() {
                 imageUrl={item.imageUrl} // Pass image URL
                 fileUrl={item.fileUrl} // Pass file URL
                 onLongPress={(event) => handleMessageLongPress(item, event)} // New handler
+                isForwarded={item.isForwarded} // Pass forwarded status
               />
             );
           }}
@@ -432,8 +469,17 @@ function ChatScreen() {
           onForward={handleForward}
           onClose={handleCloseOverlay}
           style={getMessageActionsPosition()}
+          isVoiceMessage={!!selectedMessage.message.voiceMessageUrl}
         />
       )}
+
+      <ForwardSelectionModal
+        visible={forwardModalVisible}
+        onClose={() => setForwardModalVisible(false)}
+        onForward={handleSendForward}
+        friends={myFriends}
+        groups={myGroups}
+      />
     </SafeAreaView>
   );
 }

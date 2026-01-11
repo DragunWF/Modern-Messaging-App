@@ -11,6 +11,7 @@ interface MessageActionsOverlayProps {
   onForward: () => void;
   onClose: () => void;
   style?: ViewStyle; // Added style prop
+  isVoiceMessage?: boolean; // New prop
 }
 
 const MessageActionsOverlay = ({
@@ -20,6 +21,7 @@ const MessageActionsOverlay = ({
   onForward,
   onClose,
   style,
+  isVoiceMessage,
 }: MessageActionsOverlayProps) => {
   const { colors } = useTheme();
 
@@ -29,20 +31,6 @@ const MessageActionsOverlay = ({
     onClose();
   };
 
-  // The actual Share.share for forwarding might be complex depending on targets.
-  // For now, it's just a placeholder.
-  const handleForward = async () => {
-    try {
-      await Share.share({
-        message: messageText,
-      });
-    } catch (error: any) {
-      // alert(error.message);
-    } finally {
-      onClose();
-    }
-  };
-
   return (
     <View style={[styles.container, { backgroundColor: colors.backgroundCard }, style]}>
       <TouchableOpacity style={styles.actionButton} onPress={onReply}>
@@ -50,10 +38,12 @@ const MessageActionsOverlay = ({
         <Text style={[styles.actionText, { color: colors.textPrimary }]}>Reply</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.actionButton} onPress={handleForward}>
-        <Ionicons name="arrow-redo-outline" size={24} color={colors.textPrimary} />
-        <Text style={[styles.actionText, { color: colors.textPrimary }]}>Forward</Text>
-      </TouchableOpacity>
+      {!isVoiceMessage && (
+        <TouchableOpacity style={styles.actionButton} onPress={onForward}>
+          <Ionicons name="arrow-redo-outline" size={24} color={colors.textPrimary} />
+          <Text style={[styles.actionText, { color: colors.textPrimary }]}>Forward</Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity style={styles.actionButton} onPress={handleCopy}>
         <Ionicons name="copy-outline" size={24} color={colors.textPrimary} />

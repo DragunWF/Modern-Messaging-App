@@ -27,6 +27,7 @@ interface MessageBubbleProps {
   imageUrl?: string; // New prop for image
   fileUrl?: string; // New prop for file
   onLongPress?: (event: GestureResponderEvent) => void; // New prop for long press
+  isForwarded?: boolean; // New prop for forwarded messages
 }
 
 const MessageBubble = ({
@@ -39,6 +40,7 @@ const MessageBubble = ({
   imageUrl,
   fileUrl,
   onLongPress,
+  isForwarded,
 }: MessageBubbleProps) => {
   const { colors } = useTheme();
   // console.log("MessageBubble props:", { text, fileUrl, isMe }); // Debug
@@ -80,6 +82,28 @@ const MessageBubble = ({
             },
           ]}
         >
+          {/* Forwarded Label */}
+          {isForwarded && (
+            <View style={styles.forwardedContainer}>
+              <Ionicons
+                name="arrow-redo"
+                size={12}
+                color={isMe ? "rgba(255,255,255,0.7)" : colors.textSecondary}
+                style={styles.forwardedIcon}
+              />
+              <Text
+                style={[
+                  styles.forwardedText,
+                  {
+                    color: isMe ? "rgba(255,255,255,0.7)" : colors.textSecondary,
+                  },
+                ]}
+              >
+                Forwarded
+              </Text>
+            </View>
+          )}
+
           {/* Reply Quote Block */}
           {replyTo && (
             <View
@@ -316,6 +340,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     flex: 1,
+  },
+  // Forwarded Label Styles
+  forwardedContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  forwardedIcon: {
+    marginRight: 4,
+  },
+  forwardedText: {
+    fontSize: 12,
+    fontStyle: "italic",
   },
 });
 

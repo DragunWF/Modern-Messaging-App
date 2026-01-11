@@ -68,7 +68,7 @@ export class ChatUseCases {
     const path = `chat_files/${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`;
-    // Use 'auto' to let Cloudinary detect the file type. 
+    // Use 'auto' to let Cloudinary detect the file type.
     // This often treats PDFs as page-able images which avoids strict 'raw' access controls.
     return await this.storageService.uploadImage(uri, path, "auto");
   }
@@ -252,5 +252,41 @@ export class ChatUseCases {
 
     const updatedMessage = { ...message, reactions };
     await this.messageRepository.updateMessage(updatedMessage);
+  }
+
+  async forwardMessage(
+    senderId: string,
+    targetIds: string[],
+    messageToForward: Message
+  ): Promise<void> {
+    if (messageToForward.voiceMessageUrl) {
+      throw new Error("Voice messages cannot be forwarded.");
+    }
+
+    const promises = targetIds.map(async (targetId) => {
+      const newMessage: Message = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        senderId,
+        receiverId: targetId,
+        content: messageToForward.content,
+        timestamp: Date.now(),
+        isRead: false,
+        isDeleted: false,
+        isForwarded: true,
+        reactions: {},
+      };
+
+      if (messageToForward.imageUrl) {
+        newMessage.imageUrl = messageToForward.imageUrl;
+      }
+
+      if (messageToForward.fileUrl) {
+        newMessage.fileUrl = messageToForward.fileUrl;
+      }
+
+      await this.messageRepository.createMessage(newMessage);
+    });
+
+    await Promise.all(promises);
   }
 }
