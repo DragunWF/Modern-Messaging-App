@@ -70,8 +70,37 @@ function GroupProfileScreen() {
   }, [authUser?.id, userUseCases]);
 
   const handleRemoveMember = (userId: string) => {
-    console.log(`Attempting to remove user ${userId}`);
-    // In a real scenario, this would trigger a use case to remove the user
+    if (!groupChat) return;
+
+    // Optional: Prevent removing yourself (if business logic requires leaving group instead)
+    // For now, allowing removal of anyone.
+
+    Alert.alert(
+      "Remove Member",
+      "Are you sure you want to remove this member?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await groupChatUseCases.removeMemberFromGroup(
+                groupChat.id,
+                userId
+              );
+              fetchGroupData(); // Refresh list
+            } catch (error) {
+              console.error("Failed to remove member:", error);
+              Alert.alert(
+                "Error",
+                "Failed to remove member. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleRenameGroup = () => {

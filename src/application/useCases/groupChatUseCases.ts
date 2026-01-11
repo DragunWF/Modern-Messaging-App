@@ -83,6 +83,27 @@ export class GroupChatUseCases {
     }
   }
 
+  async removeMemberFromGroup(groupId: string, memberIdToRemove: string): Promise<void> {
+    try {
+      const groupChat = await this.groupChatRepository.getGroupChatById(groupId);
+      if (!groupChat) throw new Error("Group chat not found");
+
+      const updatedMemberIds = groupChat.memberIds.filter(
+        (id) => id !== memberIdToRemove
+      );
+
+      const updatedGroupChat: GroupChat = {
+        ...groupChat,
+        memberIds: updatedMemberIds,
+      };
+
+      await this.groupChatRepository.updateGroupChat(updatedGroupChat);
+    } catch (error) {
+      console.error("Error removing member from group:", error);
+      throw error;
+    }
+  }
+
   subscribeToGroupChats(
     userId: string,
     callback: (groupChats: GroupChat[]) => void
