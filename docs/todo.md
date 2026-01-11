@@ -54,6 +54,11 @@
 - [x] File messaging feature
 - [ ] Voice messaging feature
 - [x] Typing indicators
+- [ ] Group profile
+  - [ ] Rename group chat feature
+  - [ ] Remove user feature
+- [ ] Friend profile
+  - [ ] Remove friend feature
 
 ### User Profile
 
