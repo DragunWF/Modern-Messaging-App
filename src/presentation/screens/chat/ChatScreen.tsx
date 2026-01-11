@@ -8,9 +8,9 @@ import {
   SafeAreaView,
   GestureResponderEvent,
   TouchableWithoutFeedback,
-  Dimensions, // Added Dimensions
-  ViewStyle, // Added ViewStyle
-  Alert, // Added Alert
+  Dimensions,
+  ViewStyle,
+  Alert,
 } from "react-native";
 import {
   useRoute,
@@ -72,7 +72,9 @@ function ChatScreen() {
   const [forwardModalVisible, setForwardModalVisible] = useState(false);
   const [myFriends, setMyFriends] = useState<User[]>([]);
   const [myGroups, setMyGroups] = useState<GroupChat[]>([]);
-  const [messageToForward, setMessageToForward] = useState<Message | null>(null);
+  const [messageToForward, setMessageToForward] = useState<Message | null>(
+    null
+  );
 
   // Fetch Chat Info (User)
   useEffect(() => {
@@ -332,10 +334,10 @@ function ChatScreen() {
 
   const handleForward = useCallback(async () => {
     if (!selectedMessage?.message || !authUser?.id) return;
-    
+
     // Store message to forward
     setMessageToForward(selectedMessage.message);
-    
+
     // Close overlay
     handleCloseOverlay();
 
@@ -350,13 +352,23 @@ function ChatScreen() {
       console.error("Error loading forward targets:", error);
       Alert.alert("Error", "Could not load friends or groups.");
     }
-  }, [selectedMessage?.message, authUser?.id, handleCloseOverlay, userUseCases, chatUseCases]);
+  }, [
+    selectedMessage?.message,
+    authUser?.id,
+    handleCloseOverlay,
+    userUseCases,
+    chatUseCases,
+  ]);
 
   const handleSendForward = async (targetIds: string[]) => {
     if (!authUser?.id || !messageToForward) return;
 
     try {
-      await chatUseCases.forwardMessage(authUser.id, targetIds, messageToForward);
+      await chatUseCases.forwardMessage(
+        authUser.id,
+        targetIds,
+        messageToForward
+      );
       Alert.alert("Success", "Message forwarded!");
     } catch (error) {
       console.error("Error forwarding message:", error);

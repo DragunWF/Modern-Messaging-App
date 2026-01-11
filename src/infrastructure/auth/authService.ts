@@ -3,7 +3,7 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   UserCredential,
-  getAuth, // Import getAuth to get the current user
+  getAuth,
 } from "firebase/auth";
 import { auth } from "../database/firebaseConfig"; // Corrected import path
 import { IAuthService } from "../../application/interfaces/iAuthService";
