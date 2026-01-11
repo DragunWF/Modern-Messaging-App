@@ -21,7 +21,8 @@ export class StorageService implements IStorageService {
 
       // Extract extension from URI
       const uriParts = uri.split(".");
-      const extension = uriParts.length > 1 ? uriParts[uriParts.length - 1] : "";
+      const extension =
+        uriParts.length > 1 ? uriParts[uriParts.length - 1] : "";
 
       // Determine mime type based on resourceType (basic fallback)
       let type = "image/jpeg";

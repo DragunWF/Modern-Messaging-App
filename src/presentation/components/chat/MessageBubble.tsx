@@ -95,7 +95,9 @@ const MessageBubble = ({
                 style={[
                   styles.forwardedText,
                   {
-                    color: isMe ? "rgba(255,255,255,0.7)" : colors.textSecondary,
+                    color: isMe
+                      ? "rgba(255,255,255,0.7)"
+                      : colors.textSecondary,
                   },
                 ]}
               >
