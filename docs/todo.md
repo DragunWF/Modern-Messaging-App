@@ -55,7 +55,7 @@
 - [ ] Voice messaging feature
 - [x] Typing indicators
 - [ ] Group profile
-  - [ ] UI layout
+  - [x] UI layout
   - [ ] Rename group chat feature
   - [ ] Remove user feature
 - [x] Friend profile
