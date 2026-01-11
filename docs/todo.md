@@ -52,7 +52,7 @@
 - [x] Message reactions feature
 - [x] Image messaging feature
 - [x] File messaging feature
-- [ ] Voice messaging feature
+- [x] Voice messaging feature
 - [x] Typing indicators
 - [x] Group profile
   - [x] UI layout
