@@ -284,27 +284,29 @@ export class UserUseCases {
       const updatedCurrentUserFriends = currentUser.friends
         ? currentUser.friends.filter((id) => id !== friendId)
         : [];
-      await this.userRepository.updateUser({
-        ...currentUser,
-        friends: updatedCurrentUserFriends,
-      });
+      await this.userRepository.updateUserFriendsList(
+        currentUserId,
+        updatedCurrentUserFriends
+      );
 
       // Remove currentUserId from friendUser's friends list
       const updatedFriendUserFriends = friendUser.friends
         ? friendUser.friends.filter((id) => id !== currentUserId)
         : [];
-      await this.userRepository.updateUser({
-        ...friendUser,
-        friends: updatedFriendUserFriends,
-      });
+      await this.userRepository.updateUserFriendsList(
+        friendId,
+        updatedFriendUserFriends
+      );
 
-      // Optional: Clean up any pending friend requests between them if they exist
+      // Clean up any pending friend requests between them if they exist
       // For current user: remove from outgoing if any
-      const updatedCurrentUserOutgoingRequests = currentUser.outgoingFriendRequests
-        ? currentUser.outgoingFriendRequests.filter((id) => id !== friendId)
-        : [];
+      const updatedCurrentUserOutgoingRequests =
+        currentUser.outgoingFriendRequests
+          ? currentUser.outgoingFriendRequests.filter((id) => id !== friendId)
+          : [];
       await this.userRepository.updateUser({
         ...currentUser,
+        friends: updatedCurrentUserFriends,
         outgoingFriendRequests: updatedCurrentUserOutgoingRequests,
       });
 
@@ -312,17 +314,16 @@ export class UserUseCases {
       const updatedFriendUserIncomingRequests = friendUser.friendRequests
         ? friendUser.friendRequests.filter((id) => id !== currentUserId)
         : [];
+      const updatedFriendUserOutgoingRequests =
+        friendUser.outgoingFriendRequests
+          ? friendUser.outgoingFriendRequests.filter(
+              (id) => id !== currentUserId
+            )
+          : [];
       await this.userRepository.updateUser({
         ...friendUser,
+        friends: updatedFriendUserFriends,
         friendRequests: updatedFriendUserIncomingRequests,
-      });
-
-      // Also clean up outgoing requests of the friend user to the current user
-      const updatedFriendUserOutgoingRequests = friendUser.outgoingFriendRequests
-        ? friendUser.outgoingFriendRequests.filter((id) => id !== currentUserId)
-        : [];
-      await this.userRepository.updateUser({
-        ...friendUser,
         outgoingFriendRequests: updatedFriendUserOutgoingRequests,
       });
     } catch (error) {

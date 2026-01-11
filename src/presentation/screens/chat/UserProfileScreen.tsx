@@ -8,11 +8,15 @@ import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import User from "../../../domain/entities/user";
 import Button from "../../components/ui/Button";
 import Header from "../../components/ui/Header";
-import { CHAT_SCREEN_NAMES } from "../../../shared/constants/navigation";
+import {
+  CHAT_SCREEN_NAMES,
+  NAVIGATOR_NAMES,
+  HOME_SCREEN_NAMES,
+} from "../../../shared/constants/navigation";
 
 function UserProfileScreen() {
   const { colors } = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { userUseCases } = useService();
   const { user: authUser } = useAuth();
@@ -54,8 +58,11 @@ function UserProfileScreen() {
                 "Success",
                 `${friendProfile.username} has been removed from your friends.`
               );
-              // @ts-ignore
-              navigation.navigate(CHAT_SCREEN_NAMES.Chat); // Or navigate back to Home
+
+              // Navigate back to Home Screen
+              navigation.navigate(NAVIGATOR_NAMES.HomeNavigator, {
+                screen: HOME_SCREEN_NAMES.Home,
+              });
             } catch (error) {
               console.error("Error removing friend:", error);
               Alert.alert("Error", "Failed to remove friend.");
