@@ -14,10 +14,12 @@ import Header from "../../components/ui/Header";
 import IconButton from "../../components/ui/IconButton";
 import GroupMemberItem from "../../components/group/GroupMemberItem";
 import RenameGroupModal from "../../components/group/RenameGroupModal";
+import AddMembersModal from "../../components/group/AddMembersModal"; // New import
 import User from "../../../domain/entities/user";
 import GroupChat from "../../../domain/entities/groupChat";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useService } from "../../context/ServiceContext";
+import { useAuth } from "../../context/AuthContext"; // New import
 
 function GroupProfileScreen() {
   const { colors } = useTheme();
@@ -25,10 +27,15 @@ function GroupProfileScreen() {
   const route = useRoute<any>();
   const { groupId } = route.params; // Get groupId from params
   const { groupChatUseCases, userUseCases } = useService();
+  const { user: authUser } = useAuth(); // Get authenticated user
 
   const [groupChat, setGroupChat] = React.useState<GroupChat | null>(null);
   const [members, setMembers] = React.useState<User[]>([]);
   const [isRenameModalVisible, setIsRenameModalVisible] = React.useState(false);
+  const [isAddMembersModalVisible, setIsAddMembersModalVisible] =
+    React.useState(false); // New state
+  const [allFriends, setAllFriends] = React.useState<User[]>([]); // New state for all friends
+  const [isLoadingFriends, setIsLoadingFriends] = React.useState(false); // New state for loading friends
 
   const fetchGroupData = React.useCallback(async () => {
     if (!groupId) return;
@@ -47,6 +54,20 @@ function GroupProfileScreen() {
   React.useEffect(() => {
     fetchGroupData();
   }, [fetchGroupData]);
+
+  // Fetch all friends for the AddMembersModal
+  React.useEffect(() => {
+    if (!authUser?.id) return;
+    setIsLoadingFriends(true);
+    const unsubscribe = userUseCases.subscribeToFriends(
+      authUser.id,
+      (friends) => {
+        setAllFriends(friends);
+        setIsLoadingFriends(false);
+      }
+    );
+    return () => unsubscribe();
+  }, [authUser?.id, userUseCases]);
 
   const handleRemoveMember = (userId: string) => {
     console.log(`Attempting to remove user ${userId}`);
@@ -97,8 +118,12 @@ function GroupProfileScreen() {
   };
 
   const handleAddMemberPress = () => {
-    console.log("Add Member button pressed");
-    // Functionality to be implemented later
+    setIsAddMembersModalVisible(true); // Open the AddMembersModal
+  };
+
+  const handleAddSelectedMembers = (userIds: string[]) => {
+    console.log(`Selected users to add to group: ${userIds.join(", ")}`);
+    // Functionality to add users to group will be implemented later
   };
 
   if (!groupChat) {
@@ -167,12 +192,22 @@ function GroupProfileScreen() {
         contentContainerStyle={styles.memberListContent}
       />
 
-      {/* Android Fallback Modal */}
+      {/* Rename Group Modal (Android Fallback) */}
       <RenameGroupModal
         visible={isRenameModalVisible}
         onClose={() => setIsRenameModalVisible(false)}
         onRename={performRename}
         currentName={groupChat.name}
+      />
+
+      {/* Add Members Modal */}
+      <AddMembersModal
+        visible={isAddMembersModalVisible}
+        onClose={() => setIsAddMembersModalVisible(false)}
+        onAddSelectedMembers={handleAddSelectedMembers} // Changed prop name
+        currentGroupMemberIds={groupChat.memberIds || []}
+        allFriends={allFriends}
+        isLoadingFriends={isLoadingFriends}
       />
     </View>
   );
