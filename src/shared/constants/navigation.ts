@@ -21,6 +21,7 @@ export const CHAT_SCREEN_NAMES = {
   Chat: "ChatScreen",
   GroupChat: "GroupChatScreen",
   UserProfile: "UserProfileScreen",
+  GroupProfile: "GroupProfileScreen",
 };
 
 export const SETTINGS_SCREEN_NAMES = {

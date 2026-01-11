@@ -7,6 +7,7 @@ import UserRepository from "../../infrastructure/repositories/userRepository";
 import NotificationRepository from "../../infrastructure/repositories/notificationRepository";
 import MessageRepository from "../../infrastructure/repositories/messageRepository";
 import GroupChatRepository from "../../infrastructure/repositories/groupChatRepository";
+import { StorageService } from "../../infrastructure/storage/storageService";
 
 interface ServiceContextType {
   userUseCases: UserUseCases;
@@ -23,6 +24,7 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   const notificationRepository = new NotificationRepository();
   const messageRepository = new MessageRepository();
   const groupChatRepository = new GroupChatRepository();
+  const storageService = new StorageService();
 
   // Instantiate Application Use Cases
   const userUseCases = new UserUseCases(
@@ -30,17 +32,20 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     userRepository,
     notificationRepository
   );
-  
-    const chatUseCases = new ChatUseCases(
-      messageRepository,
-      groupChatRepository,
-      userRepository
-    );
+
+  const chatUseCases = new ChatUseCases(
+    messageRepository,
+    groupChatRepository,
+    userRepository,
+    storageService
+  );
 
   const groupChatUseCases = new GroupChatUseCases(groupChatRepository);
 
   return (
-    <ServiceContext.Provider value={{ userUseCases, chatUseCases, groupChatUseCases }}>
+    <ServiceContext.Provider
+      value={{ userUseCases, chatUseCases, groupChatUseCases }}
+    >
       {children}
     </ServiceContext.Provider>
   );

@@ -273,6 +273,65 @@ export class UserUseCases {
     }
   }
 
+  async removeFriend(currentUserId: string, friendId: string): Promise<void> {
+    try {
+      const currentUser = await this.userRepository.getUserById(currentUserId);
+      const friendUser = await this.userRepository.getUserById(friendId);
+
+      if (!currentUser || !friendUser) throw new Error("User not found");
+
+      // Remove friendId from currentUser's friends list
+      const updatedCurrentUserFriends = currentUser.friends
+        ? currentUser.friends.filter((id) => id !== friendId)
+        : [];
+      await this.userRepository.updateUserFriendsList(
+        currentUserId,
+        updatedCurrentUserFriends
+      );
+
+      // Remove currentUserId from friendUser's friends list
+      const updatedFriendUserFriends = friendUser.friends
+        ? friendUser.friends.filter((id) => id !== currentUserId)
+        : [];
+      await this.userRepository.updateUserFriendsList(
+        friendId,
+        updatedFriendUserFriends
+      );
+
+      // Clean up any pending friend requests between them if they exist
+      // For current user: remove from outgoing if any
+      const updatedCurrentUserOutgoingRequests =
+        currentUser.outgoingFriendRequests
+          ? currentUser.outgoingFriendRequests.filter((id) => id !== friendId)
+          : [];
+      await this.userRepository.updateUser({
+        ...currentUser,
+        friends: updatedCurrentUserFriends,
+        outgoingFriendRequests: updatedCurrentUserOutgoingRequests,
+      });
+
+      // For friend user: remove from incoming if any
+      const updatedFriendUserIncomingRequests = friendUser.friendRequests
+        ? friendUser.friendRequests.filter((id) => id !== currentUserId)
+        : [];
+      const updatedFriendUserOutgoingRequests =
+        friendUser.outgoingFriendRequests
+          ? friendUser.outgoingFriendRequests.filter(
+              (id) => id !== currentUserId
+            )
+          : [];
+      await this.userRepository.updateUser({
+        ...friendUser,
+        friends: updatedFriendUserFriends,
+        friendRequests: updatedFriendUserIncomingRequests,
+        outgoingFriendRequests: updatedFriendUserOutgoingRequests,
+      });
+    } catch (error) {
+      console.error("Error removing friend:", error);
+      throw error;
+    }
+  }
+
   async getNotifications(userId: string): Promise<Notification[]> {
     try {
       return await this.notificationRepository.getNotificationsForUser(userId);

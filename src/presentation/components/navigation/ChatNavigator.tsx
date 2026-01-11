@@ -6,6 +6,7 @@ import {
 } from "../../../shared/constants/navigation";
 import ChatScreen from "../../screens/chat/ChatScreen";
 import UserProfileScreen from "../../screens/chat/UserProfileScreen";
+import GroupProfileScreen from "../../screens/chat/GroupProfileScreen";
 
 const Stack = createStackNavigator();
 
@@ -20,12 +21,12 @@ function ChatNavigator() {
     >
       <Stack.Screen name={CHAT_SCREEN_NAMES.Chat} component={ChatScreen} />
       <Stack.Screen
-        name={CHAT_SCREEN_NAMES.GroupChat}
-        component={ChatScreen}
-      />
-      <Stack.Screen
         name={CHAT_SCREEN_NAMES.UserProfile}
         component={UserProfileScreen}
+      />
+      <Stack.Screen
+        name={CHAT_SCREEN_NAMES.GroupProfile}
+        component={GroupProfileScreen}
       />
     </Stack.Navigator>
   );

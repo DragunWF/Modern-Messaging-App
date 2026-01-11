@@ -8,6 +8,7 @@ export default interface IUserRepository {
   deleteUser(id: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
   getFriendsOfUser(userId: string): Promise<User[]>;
+  updateUserFriendsList(userId: string, friendIds: string[]): Promise<void>; // New method
   
   // Real-time Presence & Updates
   initializePresence(userId: string): void;

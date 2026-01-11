@@ -1,8 +1,16 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Share, ViewStyle, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Share,
+  ViewStyle,
+  Alert,
+} from "react-native";
 import { useTheme } from "../../context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
-import * as Clipboard from 'expo-clipboard';
+import * as Clipboard from "expo-clipboard";
 
 interface MessageActionsOverlayProps {
   messageText: string;
@@ -10,7 +18,8 @@ interface MessageActionsOverlayProps {
   onReply: () => void;
   onForward: () => void;
   onClose: () => void;
-  style?: ViewStyle; // Added style prop
+  style?: ViewStyle;
+  isVoiceMessage?: boolean;
 }
 
 const MessageActionsOverlay = ({
@@ -20,6 +29,7 @@ const MessageActionsOverlay = ({
   onForward,
   onClose,
   style,
+  isVoiceMessage,
 }: MessageActionsOverlayProps) => {
   const { colors } = useTheme();
 
@@ -29,35 +39,43 @@ const MessageActionsOverlay = ({
     onClose();
   };
 
-  // The actual Share.share for forwarding might be complex depending on targets.
-  // For now, it's just a placeholder.
-  const handleForward = async () => {
-    try {
-      await Share.share({
-        message: messageText,
-      });
-    } catch (error: any) {
-      // alert(error.message);
-    } finally {
-      onClose();
-    }
-  };
-
   return (
-    <View style={[styles.container, { backgroundColor: colors.backgroundCard }, style]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.backgroundCard },
+        style,
+      ]}
+    >
       <TouchableOpacity style={styles.actionButton} onPress={onReply}>
-        <Ionicons name="arrow-undo-outline" size={24} color={colors.textPrimary} />
-        <Text style={[styles.actionText, { color: colors.textPrimary }]}>Reply</Text>
+        <Ionicons
+          name="arrow-undo-outline"
+          size={24}
+          color={colors.textPrimary}
+        />
+        <Text style={[styles.actionText, { color: colors.textPrimary }]}>
+          Reply
+        </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.actionButton} onPress={handleForward}>
-        <Ionicons name="arrow-redo-outline" size={24} color={colors.textPrimary} />
-        <Text style={[styles.actionText, { color: colors.textPrimary }]}>Forward</Text>
-      </TouchableOpacity>
+      {!isVoiceMessage && (
+        <TouchableOpacity style={styles.actionButton} onPress={onForward}>
+          <Ionicons
+            name="arrow-redo-outline"
+            size={24}
+            color={colors.textPrimary}
+          />
+          <Text style={[styles.actionText, { color: colors.textPrimary }]}>
+            Forward
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity style={styles.actionButton} onPress={handleCopy}>
         <Ionicons name="copy-outline" size={24} color={colors.textPrimary} />
-        <Text style={[styles.actionText, { color: colors.textPrimary }]}>Copy</Text>
+        <Text style={[styles.actionText, { color: colors.textPrimary }]}>
+          Copy
+        </Text>
       </TouchableOpacity>
 
       {/* Optionally, add a "More" or "Details" button if needed */}
@@ -95,4 +113,3 @@ const styles = StyleSheet.create({
 });
 
 export default MessageActionsOverlay;
-

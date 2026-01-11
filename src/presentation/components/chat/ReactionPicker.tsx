@@ -1,21 +1,37 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ViewStyle,
+} from "react-native";
 import { useTheme } from "../../context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 
 interface ReactionPickerProps {
   onSelectReaction: (emoji: string) => void;
   onClose: () => void;
-  style?: ViewStyle; // Added style prop
+  style?: ViewStyle;
 }
 
 const emojis = ["❤️", "😂", "😮", "😢", "😡", "👍"]; // Preset emojis
 
-const ReactionPicker = ({ onSelectReaction, onClose, style }: ReactionPickerProps) => {
+const ReactionPicker = ({
+  onSelectReaction,
+  onClose,
+  style,
+}: ReactionPickerProps) => {
   const { colors } = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.backgroundCard }, style]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.backgroundCard },
+        style,
+      ]}
+    >
       {emojis.map((emoji) => (
         <TouchableOpacity
           key={emoji}
@@ -56,4 +72,3 @@ const styles = StyleSheet.create({
 });
 
 export default ReactionPicker;
-

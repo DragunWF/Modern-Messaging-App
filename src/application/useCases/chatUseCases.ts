@@ -1,6 +1,7 @@
 import IMessageRepository from "../interfaces/iMessageRepository";
 import IGroupChatRepository from "../interfaces/iGroupChatRepository";
 import IUserRepository from "../interfaces/iUserRepository";
+import { IStorageService } from "../interfaces/iStorageService";
 import Message from "../../domain/entities/message";
 import GroupChat from "../../domain/entities/groupChat";
 
@@ -8,13 +9,22 @@ export class ChatUseCases {
   constructor(
     private messageRepository: IMessageRepository,
     private groupChatRepository: IGroupChatRepository,
-    private userRepository: IUserRepository
+    private userRepository: IUserRepository,
+    private storageService: IStorageService
   ) {}
 
   async sendMessage(
     senderId: string,
     receiverId: string,
-    content: string
+    content: string,
+    replyTo?: {
+      content: string;
+      senderId: string;
+      senderName?: string;
+    },
+    imageUrl?: string,
+    fileUrl?: string,
+    voiceMessageUrl?: string
   ): Promise<Message> {
     const newMessage: Message = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -27,7 +37,48 @@ export class ChatUseCases {
       isForwarded: false,
       reactions: {},
     };
+
+    if (replyTo) {
+      newMessage.replyTo = replyTo;
+    }
+
+    if (imageUrl) {
+      newMessage.imageUrl = imageUrl;
+    }
+
+    if (fileUrl) {
+      newMessage.fileUrl = fileUrl;
+    }
+
+    if (voiceMessageUrl) {
+      newMessage.voiceMessageUrl = voiceMessageUrl;
+    }
+
     return await this.messageRepository.createMessage(newMessage);
+  }
+
+  async uploadImage(uri: string): Promise<string> {
+    const path = `chat_images/${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    return await this.storageService.uploadImage(uri, path, "image");
+  }
+
+  async uploadFile(uri: string): Promise<string> {
+    const path = `chat_files/${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    // Use 'auto' to let Cloudinary detect the file type.
+    // This often treats PDFs as page-able images which avoids strict 'raw' access controls.
+    return await this.storageService.uploadImage(uri, path, "auto");
+  }
+
+  async uploadVoiceMessage(uri: string): Promise<string> {
+    const path = `chat_voice/${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    // Cloudinary treats audio as 'video' resource type
+    return await this.storageService.uploadImage(uri, path, "video");
   }
 
   async getMessagesBetweenUsers(
@@ -201,5 +252,41 @@ export class ChatUseCases {
 
     const updatedMessage = { ...message, reactions };
     await this.messageRepository.updateMessage(updatedMessage);
+  }
+
+  async forwardMessage(
+    senderId: string,
+    targetIds: string[],
+    messageToForward: Message
+  ): Promise<void> {
+    if (messageToForward.voiceMessageUrl) {
+      throw new Error("Voice messages cannot be forwarded.");
+    }
+
+    const promises = targetIds.map(async (targetId) => {
+      const newMessage: Message = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        senderId,
+        receiverId: targetId,
+        content: messageToForward.content,
+        timestamp: Date.now(),
+        isRead: false,
+        isDeleted: false,
+        isForwarded: true,
+        reactions: {},
+      };
+
+      if (messageToForward.imageUrl) {
+        newMessage.imageUrl = messageToForward.imageUrl;
+      }
+
+      if (messageToForward.fileUrl) {
+        newMessage.fileUrl = messageToForward.fileUrl;
+      }
+
+      await this.messageRepository.createMessage(newMessage);
+    });
+
+    await Promise.all(promises);
   }
 }

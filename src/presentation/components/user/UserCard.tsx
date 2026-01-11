@@ -37,33 +37,39 @@ const UserCard = ({
           {user.username}
         </Text>
       </View>
-      <TouchableOpacity
-        style={[
-          styles.addButton,
-          {
-            backgroundColor:
-              isRequestPending || isFriend ? colors.border : colors.primary,
-          },
-        ]}
-        onPress={() => onAddFriend(user.id)}
-        disabled={isRequestPending || isFriend}
-      >
-        <Ionicons
-          name={
-            isFriend
-              ? "people"
-              : isRequestPending
-              ? "hourglass-outline"
-              : "person-add"
-          }
-          size={20}
-          color={
-            isRequestPending || isFriend
-              ? colors.textSecondary
-              : colors.textInverse
-          }
-        />
-      </TouchableOpacity>
+
+      {isFriend ? (
+        <View style={styles.statusContainer}>
+          <Text style={[styles.statusText, { color: colors.primary }]}>
+            Friends
+          </Text>
+          <Ionicons
+            name="checkmark-circle"
+            size={20}
+            color={colors.primary}
+            style={styles.statusIcon}
+          />
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={[
+            styles.addButton,
+            {
+              backgroundColor: isRequestPending
+                ? colors.border
+                : colors.primary,
+            },
+          ]}
+          onPress={() => onAddFriend(user.id)}
+          disabled={isRequestPending}
+        >
+          <Ionicons
+            name={isRequestPending ? "hourglass-outline" : "person-add"}
+            size={20}
+            color={isRequestPending ? colors.textSecondary : colors.textInverse}
+          />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -101,6 +107,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+  },
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginRight: 4,
+  },
+  statusIcon: {
+    marginLeft: 2,
   },
 });
 

@@ -4,17 +4,32 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Text,
   Platform,
+  Alert,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 import { useTheme } from "../../context/ThemeContext";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
   onTyping?: (isTyping: boolean) => void;
+  replyingTo?: { content: string; senderName?: string } | null;
+  onCancelReply?: () => void;
+  onSendImage?: (uri: string) => void;
+  onSendFile?: (uri: string, name: string) => void;
 }
 
-const ChatInput = ({ onSend, onTyping }: ChatInputProps) => {
+const ChatInput = ({
+  onSend,
+  onTyping,
+  replyingTo,
+  onCancelReply,
+  onSendImage,
+  onSendFile,
+}: ChatInputProps) => {
   const { colors } = useTheme();
   const [text, setText] = useState("");
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -45,56 +60,133 @@ const ChatInput = ({ onSend, onTyping }: ChatInputProps) => {
     }
   };
 
+  const handlePickImage = async () => {
+    if (!onSendImage) return;
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        onSendImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to pick image");
+    }
+  };
+
+  const handlePickDocument = async () => {
+    if (!onSendFile) return;
+
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "*/*",
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        onSendFile(file.uri, file.name);
+      }
+    } catch (error) {
+      console.error("Error picking document:", error);
+      Alert.alert("Error", "Failed to pick document");
+    }
+  };
+
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
-        },
-      ]}
-    >
-      <TouchableOpacity style={styles.iconButton}>
-        <Ionicons name="add-circle" size={28} color={colors.primary} />
-      </TouchableOpacity>
+    <View style={{ backgroundColor: colors.background }}>
+      {/* Reply Preview */}
+      {replyingTo && (
+        <View
+          style={[
+            styles.replyPreview,
+            {
+              backgroundColor: colors.backgroundInput,
+              borderTopColor: colors.border,
+            },
+          ]}
+        >
+          <View
+            style={[styles.replyBar, { backgroundColor: colors.primary }]}
+          />
+          <View style={styles.replyContent}>
+            <Text style={[styles.replySender, { color: colors.primary }]}>
+              {replyingTo.senderName || "User"}
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={[styles.replyText, { color: colors.textSecondary }]}
+            >
+              {replyingTo.content}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={onCancelReply} style={styles.closeButton}>
+            <Ionicons
+              name="close-circle"
+              size={24}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
+      )}
 
-      <TouchableOpacity style={styles.iconButton}>
-        <Ionicons name="image-outline" size={26} color={colors.primary} />
-      </TouchableOpacity>
-
+      {/* Input Row */}
       <View
         style={[
-          styles.inputWrapper,
-          { backgroundColor: colors.backgroundInput },
+          styles.container,
+          {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+            borderTopWidth: replyingTo ? 0 : 1, // Remove border if reply preview is shown (it has its own)
+          },
         ]}
       >
-        <TextInput
-          style={[styles.input, { color: colors.textPrimary }]}
-          placeholder="Message..."
-          placeholderTextColor={colors.textPlaceholder}
-          multiline
-          value={text}
-          onChangeText={handleChangeText}
-        />
-        <TouchableOpacity style={styles.emojiButton}>
-          <MaterialIcons
-            name="emoji-emotions"
-            size={24}
-            color={colors.primary}
-          />
+        <TouchableOpacity style={styles.iconButton} onPress={handlePickDocument}>
+          <Ionicons name="add-circle" size={28} color={colors.primary} />
         </TouchableOpacity>
-      </View>
 
-      {text.trim().length > 0 ? (
-        <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-          <Ionicons name="send" size={24} color={colors.primary} />
+        <TouchableOpacity style={styles.iconButton} onPress={handlePickImage}>
+          <Ionicons name="image-outline" size={26} color={colors.primary} />
         </TouchableOpacity>
-      ) : (
-        <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="mic-outline" size={26} color={colors.primary} />
-        </TouchableOpacity>
-      )}
+
+        <View
+          style={[
+            styles.inputWrapper,
+            { backgroundColor: colors.backgroundInput },
+          ]}
+        >
+          <TextInput
+            style={[styles.input, { color: colors.textPrimary }]}
+            placeholder="Message..."
+            placeholderTextColor={colors.textPlaceholder}
+            multiline
+            value={text}
+            onChangeText={handleChangeText}
+          />
+          <TouchableOpacity style={styles.emojiButton}>
+            <MaterialIcons
+              name="emoji-emotions"
+              size={24}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {text.trim().length > 0 ? (
+          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+            <Ionicons name="send" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="mic-outline" size={26} color={colors.primary} />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 };
@@ -106,6 +198,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     borderTopWidth: 1,
+  },
+  replyPreview: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+  },
+  replyBar: {
+    width: 4,
+    height: "100%",
+    borderRadius: 2,
+    marginRight: 10,
+  },
+  replyContent: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  replySender: {
+    fontWeight: "bold",
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  replyText: {
+    fontSize: 14,
+  },
+  closeButton: {
+    padding: 4,
   },
   iconButton: {
     padding: 6,

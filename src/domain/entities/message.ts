@@ -10,6 +10,11 @@ export default interface Message {
   reactions: {
     [emoji: string]: string[]; // Key is Emoji, Value is array of UserIDs
   };
+  replyTo?: {
+    content: string;
+    senderId: string;
+    senderName?: string;
+  };
   isRead: boolean;
   isDeleted: boolean;
   isForwarded: boolean;

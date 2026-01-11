@@ -8,8 +8,9 @@ import {
   SafeAreaView,
   GestureResponderEvent,
   TouchableWithoutFeedback,
-  Dimensions, // Added Dimensions
-  ViewStyle, // Added ViewStyle
+  Dimensions,
+  ViewStyle,
+  Alert,
 } from "react-native";
 import {
   useRoute,
@@ -23,11 +24,13 @@ import ChatHeader from "../../components/chat/ChatHeader";
 import MessageBubble from "../../components/chat/MessageBubble";
 import ChatInput from "../../components/chat/ChatInput";
 import TypingIndicator from "../../components/chat/TypingIndicator";
-import ReactionPicker from "../../components/chat/ReactionPicker"; // Import new component
-import MessageActionsOverlay from "../../components/chat/MessageActionsOverlay"; // Import new component
+import ReactionPicker from "../../components/chat/ReactionPicker";
+import MessageActionsOverlay from "../../components/chat/MessageActionsOverlay";
+import ForwardSelectionModal from "../../components/chat/ForwardSelectionModal";
 import Message from "../../../domain/entities/message";
 import User from "../../../domain/entities/user";
 import GroupChat from "../../../domain/entities/groupChat";
+import { CHAT_SCREEN_NAMES } from "../../../shared/constants/navigation";
 
 interface SelectedMessageState {
   message: Message;
@@ -62,6 +65,17 @@ function ChatScreen() {
   // Message Options Overlay state
   const [selectedMessage, setSelectedMessage] =
     useState<SelectedMessageState | null>(null);
+
+  // Reply state
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+
+  // Forward state
+  const [forwardModalVisible, setForwardModalVisible] = useState(false);
+  const [myFriends, setMyFriends] = useState<User[]>([]);
+  const [myGroups, setMyGroups] = useState<GroupChat[]>([]);
+  const [messageToForward, setMessageToForward] = useState<Message | null>(
+    null
+  );
 
   // Fetch Chat Info (User)
   useEffect(() => {
@@ -159,9 +173,86 @@ function ChatScreen() {
     if (!receiverId) return;
 
     try {
-      await chatUseCases.sendMessage(authUser.id, receiverId, text);
+      const replyData = replyingTo
+        ? {
+            content: replyingTo.content,
+            senderId: replyingTo.senderId,
+            senderName: resolveSenderName(replyingTo.senderId),
+          }
+        : undefined;
+
+      await chatUseCases.sendMessage(authUser.id, receiverId, text, replyData);
+      setReplyingTo(null); // Clear reply state after sending
     } catch (error) {
       console.error("Failed to send message:", error);
+    }
+  };
+
+  const handleSendImage = async (uri: string) => {
+    if (!authUser?.id) return;
+    const receiverId = isGroup ? groupId : userId;
+    if (!receiverId) return;
+
+    try {
+      // 1. Upload Image
+      // You might want to show a "Sending..." indicator here
+      const imageUrl = await chatUseCases.uploadImage(uri);
+
+      // 2. Send Message with Image URL
+      const replyData = replyingTo
+        ? {
+            content: replyingTo.content,
+            senderId: replyingTo.senderId,
+            senderName: resolveSenderName(replyingTo.senderId),
+          }
+        : undefined;
+
+      // We use "Sent an image" as the text content fallback
+      await chatUseCases.sendMessage(
+        authUser.id,
+        receiverId,
+        "Sent an image",
+        replyData,
+        imageUrl
+      );
+      setReplyingTo(null);
+    } catch (error) {
+      console.error("Failed to send image:", error);
+      Alert.alert("Error", "Failed to send image. Please try again.");
+    }
+  };
+
+  const handleSendFile = async (uri: string, name: string) => {
+    if (!authUser?.id) return;
+    const receiverId = isGroup ? groupId : userId;
+    if (!receiverId) return;
+
+    try {
+      // 1. Upload File
+      const fileUrl = await chatUseCases.uploadFile(uri);
+      console.log("Uploaded fileUrl:", fileUrl);
+
+      // 2. Send Message with File URL
+      const replyData = replyingTo
+        ? {
+            content: replyingTo.content,
+            senderId: replyingTo.senderId,
+            senderName: resolveSenderName(replyingTo.senderId),
+          }
+        : undefined;
+
+      await chatUseCases.sendMessage(
+        authUser.id,
+        receiverId,
+        `Sent a file: ${name}`, // Use file name as content
+        replyData,
+        undefined, // imageUrl
+        fileUrl
+      );
+      setReplyingTo(null);
+    } catch (error) {
+      console.error("Failed to send file:", error);
+      Alert.alert("Error", "Failed to send file. Please try again.");
     }
   };
 
@@ -238,17 +329,63 @@ function ChatScreen() {
 
   const handleReply = useCallback(() => {
     if (!selectedMessage?.message) return;
-    console.log(`Reply to message: ${selectedMessage.message.id}`);
-    // TODO: Implement reply feature
+    setReplyingTo(selectedMessage.message);
     handleCloseOverlay();
   }, [selectedMessage?.message, handleCloseOverlay]);
 
-  const handleForward = useCallback(() => {
-    if (!selectedMessage?.message) return;
-    console.log(`Forward message: ${selectedMessage.message.id}`);
-    // TODO: Implement forward feature
+  const handleForward = useCallback(async () => {
+    if (!selectedMessage?.message || !authUser?.id) return;
+
+    // Store message to forward
+    setMessageToForward(selectedMessage.message);
+
+    // Close overlay
     handleCloseOverlay();
-  }, [selectedMessage?.message, handleCloseOverlay]);
+
+    // Fetch friends and groups
+    try {
+      const friends = await userUseCases.searchFriendsOfUser(authUser.id, "");
+      const groups = await chatUseCases.getUserGroupChats(authUser.id);
+      setMyFriends(friends);
+      setMyGroups(groups);
+      setForwardModalVisible(true);
+    } catch (error) {
+      console.error("Error loading forward targets:", error);
+      Alert.alert("Error", "Could not load friends or groups.");
+    }
+  }, [
+    selectedMessage?.message,
+    authUser?.id,
+    handleCloseOverlay,
+    userUseCases,
+    chatUseCases,
+  ]);
+
+  const handleSendForward = async (targetIds: string[]) => {
+    if (!authUser?.id || !messageToForward) return;
+
+    try {
+      await chatUseCases.forwardMessage(
+        authUser.id,
+        targetIds,
+        messageToForward
+      );
+      Alert.alert("Success", "Message forwarded!");
+    } catch (error) {
+      console.error("Error forwarding message:", error);
+      Alert.alert("Error", "Failed to forward message.");
+    } finally {
+      setMessageToForward(null);
+    }
+  };
+
+  const handleChatHeaderProfilePress = () => {
+    if (!isGroup && userId) {
+      // @ts-ignore
+      navigation.navigate(CHAT_SCREEN_NAMES.UserProfile, { userId: userId });
+    }
+    // For group chat, we will implement GroupProfileScreen navigation later
+  };
 
   // Calculate overlay positions dynamically
   const getReactionPickerPosition = (): ViewStyle => {
@@ -278,9 +415,10 @@ function ChatScreen() {
     >
       <ChatHeader
         title={chatTitle}
-        subtitle={chatHeaderSubtitle} // Use the default subtitle
+        subtitle={chatHeaderSubtitle}
         onBackPress={() => navigation.goBack()}
-        onProfilePress={() => {}}
+        onProfilePress={handleChatHeaderProfilePress}
+        showProfileImage={!isGroup} // Only show profile image/make clickable for 1-on-1 chats
       />
 
       <KeyboardAvoidingView
@@ -291,23 +429,44 @@ function ChatScreen() {
         <FlatList
           data={messages}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <MessageBubble
-              text={item.content}
-              isMe={item.senderId === authUser?.id}
-              timestamp={formatTime(item.timestamp)}
-              senderName={resolveSenderName(item.senderId)}
-              reactions={item.reactions} // Pass reactions
-              onLongPress={(event) => handleMessageLongPress(item, event)} // New handler
-            />
-          )}
+          renderItem={({ item }) => {
+            // console.log("Render Item:", item.id, "File:", item.fileUrl);
+            return (
+              <MessageBubble
+                text={item.content}
+                isMe={item.senderId === authUser?.id}
+                timestamp={formatTime(item.timestamp)}
+                senderName={resolveSenderName(item.senderId)}
+                reactions={item.reactions} // Pass reactions
+                replyTo={item.replyTo} // Pass reply info
+                imageUrl={item.imageUrl} // Pass image URL
+                fileUrl={item.fileUrl} // Pass file URL
+                onLongPress={(event) => handleMessageLongPress(item, event)} // New handler
+                isForwarded={item.isForwarded} // Pass forwarded status
+              />
+            );
+          }}
           contentContainerStyle={styles.listContent}
           inverted
         />
 
         <TypingIndicator text={typingIndicatorText} />
 
-        <ChatInput onSend={handleSend} onTyping={handleTyping} />
+        <ChatInput
+          onSend={handleSend}
+          onTyping={handleTyping}
+          replyingTo={
+            replyingTo
+              ? {
+                  content: replyingTo.content,
+                  senderName: resolveSenderName(replyingTo.senderId),
+                }
+              : null
+          }
+          onCancelReply={() => setReplyingTo(null)}
+          onSendImage={handleSendImage}
+          onSendFile={handleSendFile}
+        />
       </KeyboardAvoidingView>
 
       {selectedMessage && (
@@ -332,8 +491,17 @@ function ChatScreen() {
           onForward={handleForward}
           onClose={handleCloseOverlay}
           style={getMessageActionsPosition()}
+          isVoiceMessage={!!selectedMessage.message.voiceMessageUrl}
         />
       )}
+
+      <ForwardSelectionModal
+        visible={forwardModalVisible}
+        onClose={() => setForwardModalVisible(false)}
+        onForward={handleSendForward}
+        friends={myFriends}
+        groups={myGroups}
+      />
     </SafeAreaView>
   );
 }

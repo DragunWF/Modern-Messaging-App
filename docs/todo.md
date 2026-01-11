@@ -47,13 +47,20 @@
 - [x] UI layout
 - [x] Basic text messaging feature
 - [x] Copy text feature
-- [ ] Message forwarding feature
-- [ ] Message replies feature
+- [x] Message forwarding feature
+- [x] Message replies feature
 - [x] Message reactions feature
-- [ ] Image messaging feature
-- [ ] File messaging feature
+- [x] Image messaging feature
+- [x] File messaging feature
 - [ ] Voice messaging feature
 - [x] Typing indicators
+- [ ] Group profile
+  - [ ] UI layout
+  - [ ] Rename group chat feature
+  - [ ] Remove user feature
+- [x] Friend profile
+  - [x] UI layout
+  - [x] Remove friend feature
 
 ### User Profile
 
