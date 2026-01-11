@@ -30,6 +30,7 @@ import ForwardSelectionModal from "../../components/chat/ForwardSelectionModal";
 import Message from "../../../domain/entities/message";
 import User from "../../../domain/entities/user";
 import GroupChat from "../../../domain/entities/groupChat";
+import { CHAT_SCREEN_NAMES } from "../../../shared/constants/navigation";
 
 interface SelectedMessageState {
   message: Message;
@@ -378,6 +379,14 @@ function ChatScreen() {
     }
   };
 
+  const handleChatHeaderProfilePress = () => {
+    if (!isGroup && userId) {
+      // @ts-ignore
+      navigation.navigate(CHAT_SCREEN_NAMES.UserProfile, { userId: userId });
+    }
+    // For group chat, we will implement GroupProfileScreen navigation later
+  };
+
   // Calculate overlay positions dynamically
   const getReactionPickerPosition = (): ViewStyle => {
     if (!selectedMessage) return {};
@@ -406,9 +415,10 @@ function ChatScreen() {
     >
       <ChatHeader
         title={chatTitle}
-        subtitle={chatHeaderSubtitle} // Use the default subtitle
+        subtitle={chatHeaderSubtitle}
         onBackPress={() => navigation.goBack()}
-        onProfilePress={() => {}}
+        onProfilePress={handleChatHeaderProfilePress}
+        showProfileImage={!isGroup} // Only show profile image/make clickable for 1-on-1 chats
       />
 
       <KeyboardAvoidingView

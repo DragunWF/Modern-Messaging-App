@@ -20,7 +20,6 @@ function ChatNavigator() {
       }}
     >
       <Stack.Screen name={CHAT_SCREEN_NAMES.Chat} component={ChatScreen} />
-      <Stack.Screen name={CHAT_SCREEN_NAMES.GroupChat} component={ChatScreen} />
       <Stack.Screen
         name={CHAT_SCREEN_NAMES.UserProfile}
         component={UserProfileScreen}
