@@ -56,8 +56,8 @@
 - [x] Typing indicators
 - [ ] Group profile
   - [x] UI layout
-  - [ ] Rename group chat feature
-  - [ ] Remove user feature
+  - [x] Rename group chat feature
+  - [ ] Remove group member feature
 - [x] Friend profile
   - [x] UI layout
   - [x] Remove friend feature
