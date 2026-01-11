@@ -61,6 +61,28 @@ export class GroupChatUseCases {
     }
   }
 
+  async addMembersToGroup(groupId: string, newMemberIds: string[]): Promise<void> {
+    try {
+      const groupChat = await this.groupChatRepository.getGroupChatById(groupId);
+      if (!groupChat) throw new Error("Group chat not found");
+
+      // Combine existing and new members, ensuring uniqueness
+      const updatedMemberIds = Array.from(
+        new Set([...groupChat.memberIds, ...newMemberIds])
+      );
+
+      const updatedGroupChat: GroupChat = {
+        ...groupChat,
+        memberIds: updatedMemberIds,
+      };
+
+      await this.groupChatRepository.updateGroupChat(updatedGroupChat);
+    } catch (error) {
+      console.error("Error adding members to group:", error);
+      throw error;
+    }
+  }
+
   subscribeToGroupChats(
     userId: string,
     callback: (groupChats: GroupChat[]) => void

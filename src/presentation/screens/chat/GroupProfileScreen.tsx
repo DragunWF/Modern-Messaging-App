@@ -121,9 +121,19 @@ function GroupProfileScreen() {
     setIsAddMembersModalVisible(true); // Open the AddMembersModal
   };
 
-  const handleAddSelectedMembers = (userIds: string[]) => {
-    console.log(`Selected users to add to group: ${userIds.join(", ")}`);
-    // Functionality to add users to group will be implemented later
+  const handleAddSelectedMembers = async (userIds: string[]) => {
+    if (!groupChat) return;
+    if (userIds.length === 0) return;
+
+    try {
+      await groupChatUseCases.addMembersToGroup(groupChat.id, userIds);
+      // Refresh local data
+      fetchGroupData();
+      Alert.alert("Success", "Members added successfully!");
+    } catch (error) {
+      console.error("Failed to add members:", error);
+      Alert.alert("Error", "Failed to add members. Please try again.");
+    }
   };
 
   if (!groupChat) {
