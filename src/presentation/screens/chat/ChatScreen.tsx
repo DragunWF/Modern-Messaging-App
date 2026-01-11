@@ -11,6 +11,7 @@ import {
   Dimensions,
   ViewStyle,
   Alert,
+  StatusBar,
 } from "react-native";
 import {
   useRoute,
@@ -413,13 +414,19 @@ function ChatScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <ChatHeader
-        title={chatTitle}
-        subtitle={chatHeaderSubtitle}
-        onBackPress={() => navigation.goBack()}
-        onProfilePress={handleChatHeaderProfilePress}
-        showProfileImage={!isGroup} // Only show profile image/make clickable for 1-on-1 chats
-      />
+      <View
+        style={
+          Platform.OS === "android" ? styles.androidStatusBarOffset : undefined
+        }
+      >
+        <ChatHeader
+          title={chatTitle}
+          subtitle={chatHeaderSubtitle}
+          onBackPress={() => navigation.goBack()}
+          onProfilePress={handleChatHeaderProfilePress}
+          showProfileImage={!isGroup} // Only show profile image/make clickable for 1-on-1 chats
+        />
+      </View>
 
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
@@ -509,6 +516,9 @@ function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  androidStatusBarOffset: {
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   keyboardAvoidingView: {
     flex: 1,
