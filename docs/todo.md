@@ -54,11 +54,11 @@
 - [x] File messaging feature
 - [ ] Voice messaging feature
 - [x] Typing indicators
-- [ ] Group profile
+- [x] Group profile
   - [x] UI layout
   - [x] Add group member feature
   - [x] Rename group chat feature
-  - [ ] Remove group member feature
+  - [x] Remove group member feature
 - [x] Friend profile
   - [x] UI layout
   - [x] Remove friend feature
