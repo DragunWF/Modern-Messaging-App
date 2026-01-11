@@ -44,6 +44,23 @@ export class GroupChatUseCases {
     }
   }
 
+  async renameGroupChat(groupId: string, newName: string): Promise<void> {
+    try {
+      const groupChat = await this.groupChatRepository.getGroupChatById(groupId);
+      if (!groupChat) throw new Error("Group chat not found");
+
+      const updatedGroupChat: GroupChat = {
+        ...groupChat,
+        name: newName,
+      };
+
+      await this.groupChatRepository.updateGroupChat(updatedGroupChat);
+    } catch (error) {
+      console.error("Error renaming group chat:", error);
+      throw error;
+    }
+  }
+
   subscribeToGroupChats(
     userId: string,
     callback: (groupChats: GroupChat[]) => void

@@ -81,6 +81,8 @@ function ChatScreen() {
 
   // Fetch Chat Info (User or Group)
   useEffect(() => {
+    let unsubscribeGroup: (() => void) | undefined;
+
     const fetchDetails = async () => {
       if (!isGroup && userId) {
         const user = await userUseCases.getUserById(userId);
@@ -89,8 +91,22 @@ function ChatScreen() {
           setSendersCache((prev) => ({ ...prev, [user.id]: user.username }));
         }
       } else if (isGroup && groupId) {
+        // Initial fetch
         const group = await groupChatUseCases.getGroupChatById(groupId);
         setGroupChat(group);
+
+        // Subscribe to group updates for real-time name changes
+        if (authUser?.id) {
+          unsubscribeGroup = groupChatUseCases.subscribeToGroupChats(
+            authUser.id,
+            (groups) => {
+              const updatedGroup = groups.find((g) => g.id === groupId);
+              if (updatedGroup) {
+                setGroupChat(updatedGroup);
+              }
+            }
+          );
+        }
       }
 
       // If authUser is available, cache their name too
@@ -102,6 +118,12 @@ function ChatScreen() {
       }
     };
     fetchDetails();
+
+    return () => {
+      if (unsubscribeGroup) {
+        unsubscribeGroup();
+      }
+    };
   }, [userId, isGroup, groupId, authUser, userUseCases, groupChatUseCases]);
 
   // Subscribe to Messages

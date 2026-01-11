@@ -5,12 +5,15 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
+  Alert,
+  Platform,
 } from "react-native";
 import { useTheme } from "../../context/ThemeContext";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import Header from "../../components/ui/Header";
 import IconButton from "../../components/ui/IconButton";
 import GroupMemberItem from "../../components/group/GroupMemberItem";
+import RenameGroupModal from "../../components/group/RenameGroupModal";
 import User from "../../../domain/entities/user";
 import GroupChat from "../../../domain/entities/groupChat";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -25,23 +28,25 @@ function GroupProfileScreen() {
 
   const [groupChat, setGroupChat] = React.useState<GroupChat | null>(null);
   const [members, setMembers] = React.useState<User[]>([]);
+  const [isRenameModalVisible, setIsRenameModalVisible] = React.useState(false);
+
+  const fetchGroupData = React.useCallback(async () => {
+    if (!groupId) return;
+    const group = await groupChatUseCases.getGroupChatById(groupId);
+    setGroupChat(group);
+
+    if (group && group.memberIds) {
+      const membersData = await Promise.all(
+        group.memberIds.map((id) => userUseCases.getUserById(id))
+      );
+      // Filter out nulls if any user fetch failed
+      setMembers(membersData.filter((u): u is User => u !== null));
+    }
+  }, [groupId, groupChatUseCases, userUseCases]);
 
   React.useEffect(() => {
-    const fetchGroupData = async () => {
-      if (!groupId) return;
-      const group = await groupChatUseCases.getGroupChatById(groupId);
-      setGroupChat(group);
-
-      if (group && group.memberIds) {
-        const membersData = await Promise.all(
-          group.memberIds.map((id) => userUseCases.getUserById(id))
-        );
-        // Filter out nulls if any user fetch failed
-        setMembers(membersData.filter((u): u is User => u !== null));
-      }
-    };
     fetchGroupData();
-  }, [groupId, groupChatUseCases, userUseCases]);
+  }, [fetchGroupData]);
 
   const handleRemoveMember = (userId: string) => {
     console.log(`Attempting to remove user ${userId}`);
@@ -49,8 +54,46 @@ function GroupProfileScreen() {
   };
 
   const handleRenameGroup = () => {
-    console.log("Renaming group");
-    // This would likely open a modal or navigate to a rename screen
+    if (!groupChat) return;
+
+    if (Platform.OS === "ios") {
+      Alert.prompt(
+        "Rename Group",
+        "Enter a new name for the group chat.",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Save",
+            // @ts-ignore
+            onPress: (newName) => {
+              if (newName && newName.trim()) {
+                performRename(newName.trim());
+              }
+            },
+          },
+        ],
+        "plain-text",
+        groupChat.name
+      );
+    } else {
+      // Android Fallback
+      setIsRenameModalVisible(true);
+    }
+  };
+
+  const performRename = async (newName: string) => {
+    if (!groupChat) return;
+    try {
+      await groupChatUseCases.renameGroupChat(groupChat.id, newName);
+      // Refresh local data to show new name immediately (though listener might handle it too)
+      fetchGroupData();
+    } catch (error) {
+      console.error("Failed to rename group", error);
+      Alert.alert("Error", "Failed to rename group. Please try again.");
+    }
   };
 
   if (!groupChat) {
@@ -104,6 +147,14 @@ function GroupProfileScreen() {
           <GroupMemberItem user={item} onRemove={handleRemoveMember} />
         )}
         contentContainerStyle={styles.memberListContent}
+      />
+
+      {/* Android Fallback Modal */}
+      <RenameGroupModal
+        visible={isRenameModalVisible}
+        onClose={() => setIsRenameModalVisible(false)}
+        onRename={performRename}
+        currentName={groupChat.name}
       />
     </View>
   );
