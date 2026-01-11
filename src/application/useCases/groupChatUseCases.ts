@@ -35,6 +35,15 @@ export class GroupChatUseCases {
     }
   }
 
+  async getGroupChatById(id: string): Promise<GroupChat | null> {
+    try {
+      return await this.groupChatRepository.getGroupChatById(id);
+    } catch (error) {
+      console.error("Error getting group chat by id:", error);
+      return null;
+    }
+  }
+
   subscribeToGroupChats(
     userId: string,
     callback: (groupChats: GroupChat[]) => void

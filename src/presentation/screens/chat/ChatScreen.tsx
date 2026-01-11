@@ -44,7 +44,7 @@ function ChatScreen() {
   const navigation = useNavigation();
   const route = useRoute<any>();
   const { user: authUser } = useAuth();
-  const { chatUseCases, userUseCases } = useService();
+  const { chatUseCases, userUseCases, groupChatUseCases } = useService();
   const { height: screenHeight } = Dimensions.get("window"); // Get screen dimensions
 
   // Extract params
@@ -54,6 +54,7 @@ function ChatScreen() {
   // State
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatPartner, setChatPartner] = useState<User | null>(null);
+  const [groupChat, setGroupChat] = useState<GroupChat | null>(null);
 
   // Cache for resolving sender names: userId -> username
   const [sendersCache, setSendersCache] = useState<Record<string, string>>({});
@@ -78,7 +79,7 @@ function ChatScreen() {
     null
   );
 
-  // Fetch Chat Info (User)
+  // Fetch Chat Info (User or Group)
   useEffect(() => {
     const fetchDetails = async () => {
       if (!isGroup && userId) {
@@ -87,7 +88,11 @@ function ChatScreen() {
         if (user) {
           setSendersCache((prev) => ({ ...prev, [user.id]: user.username }));
         }
+      } else if (isGroup && groupId) {
+        const group = await groupChatUseCases.getGroupChatById(groupId);
+        setGroupChat(group);
       }
+
       // If authUser is available, cache their name too
       if (authUser) {
         setSendersCache((prev) => ({
@@ -97,7 +102,7 @@ function ChatScreen() {
       }
     };
     fetchDetails();
-  }, [userId, isGroup, authUser]);
+  }, [userId, isGroup, groupId, authUser, userUseCases, groupChatUseCases]);
 
   // Subscribe to Messages
   useEffect(() => {
@@ -267,7 +272,9 @@ function ChatScreen() {
       .catch((err) => console.error("Error sending typing status", err));
   };
 
-  const chatTitle = isGroup ? "Group Chat" : chatPartner?.username || "Chat";
+  const chatTitle = isGroup
+    ? groupChat?.name || "Group Chat"
+    : chatPartner?.username || "Chat";
 
   // Default subtitle for header (online status for 1-on-1, empty for groups)
   const chatHeaderSubtitle = isGroup
@@ -384,8 +391,10 @@ function ChatScreen() {
     if (!isGroup && userId) {
       // @ts-ignore
       navigation.navigate(CHAT_SCREEN_NAMES.UserProfile, { userId: userId });
+    } else if (isGroup && groupId) {
+      // @ts-ignore
+      navigation.navigate(CHAT_SCREEN_NAMES.GroupProfile, { groupId: groupId });
     }
-    // For group chat, we will implement GroupProfileScreen navigation later
   };
 
   // Calculate overlay positions dynamically
@@ -424,7 +433,7 @@ function ChatScreen() {
           subtitle={chatHeaderSubtitle}
           onBackPress={() => navigation.goBack()}
           onProfilePress={handleChatHeaderProfilePress}
-          showProfileImage={!isGroup} // Only show profile image/make clickable for 1-on-1 chats
+          // Removed showProfileImage prop to use default (true)
         />
       </View>
 
