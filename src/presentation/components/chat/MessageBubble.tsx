@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
 import { useTheme } from "../../context/ThemeContext";
 import Message from "../../../domain/entities/message"; // Import Message entity type
 
@@ -26,9 +27,119 @@ interface MessageBubbleProps {
   };
   imageUrl?: string; // New prop for image
   fileUrl?: string; // New prop for file
+  voiceMessageUrl?: string; // New prop for voice message
   onLongPress?: (event: GestureResponderEvent) => void; // New prop for long press
   isForwarded?: boolean; // New prop for forwarded messages
 }
+
+// Sub-component for Voice Player
+const VoiceMessagePlayer = ({
+  uri,
+  isMe,
+  colors,
+}: {
+  uri: string;
+  isMe: boolean;
+  colors: any;
+}) => {
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState<number | null>(null);
+  const [position, setPosition] = useState(0);
+
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [sound]);
+
+  const playSound = async () => {
+    try {
+      if (sound) {
+        if (isPlaying) {
+          await sound.pauseAsync();
+          setIsPlaying(false);
+        } else {
+          // If finished, replay from start
+          const status = await sound.getStatusAsync();
+          if (status.isLoaded && status.positionMillis === status.durationMillis) {
+             await sound.replayAsync();
+          } else {
+             await sound.playAsync();
+          }
+          setIsPlaying(true);
+        }
+      } else {
+        const { sound: newSound, status } = await Audio.Sound.createAsync(
+          { uri },
+          { shouldPlay: true },
+          (playbackStatus) => {
+            if (playbackStatus.isLoaded) {
+              setDuration(playbackStatus.durationMillis || 0);
+              setPosition(playbackStatus.positionMillis);
+              setIsPlaying(playbackStatus.isPlaying);
+              if (playbackStatus.didJustFinish) {
+                setIsPlaying(false);
+                setPosition(playbackStatus.durationMillis || 0); // Show full duration at end
+              }
+            }
+          }
+        );
+        setSound(newSound);
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error("Failed to play sound", error);
+    }
+  };
+
+  const formatDuration = (millis: number) => {
+    const totalSeconds = Math.floor(millis / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  return (
+    <View style={styles.voicePlayerContainer}>
+      <TouchableOpacity onPress={playSound}>
+        <Ionicons
+          name={isPlaying ? "pause-circle" : "play-circle"}
+          size={36}
+          color={isMe ? colors.textInverse : colors.primary}
+        />
+      </TouchableOpacity>
+      <View style={styles.voiceInfo}>
+        <View
+          style={[
+            styles.voiceProgressBar,
+            { backgroundColor: isMe ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.1)" },
+          ]}
+        >
+           <View
+            style={[
+              styles.voiceProgressFill,
+              {
+                width: duration ? `${(position / duration) * 100}%` : "0%",
+                backgroundColor: isMe ? colors.textInverse : colors.primary,
+              }
+            ]}
+           />
+        </View>
+        <Text
+          style={[
+            styles.voiceDurationText,
+            { color: isMe ? colors.textInverse : colors.textPrimary },
+          ]}
+        >
+          {duration ? formatDuration(duration) : "Voice Message"}
+        </Text>
+      </View>
+    </View>
+  );
+};
 
 const MessageBubble = ({
   text,
@@ -39,11 +150,13 @@ const MessageBubble = ({
   replyTo,
   imageUrl,
   fileUrl,
+  voiceMessageUrl,
   onLongPress,
   isForwarded,
 }: MessageBubbleProps) => {
   const { colors } = useTheme();
-  // console.log("MessageBubble props:", { text, fileUrl, isMe }); // Debug
+  console.log("MessageBubble Render:", { text, voiceMessageUrl, isMe }); // Debug Log
+
   const hasReactions = reactions && Object.keys(reactions).length > 0;
 
   const handleOpenFile = () => {
@@ -182,13 +295,22 @@ const MessageBubble = ({
             </TouchableOpacity>
           )}
 
+          {/* Voice Message */}
+          {voiceMessageUrl && (
+            <VoiceMessagePlayer
+              uri={voiceMessageUrl}
+              isMe={isMe}
+              colors={colors}
+            />
+          )}
+
           {/* Text Message (Only show if not empty or specific placeholder) */}
-          {text && text !== "Sent an image" && text !== "Sent a file" && (
+          {text && text !== "Sent an image" && text !== "Sent a file" && text !== "Voice Message" && (
             <Text
               style={[
                 styles.text,
                 { color: isMe ? colors.textInverse : colors.textPrimary },
-                (imageUrl || fileUrl) && { marginTop: 4 }, // Add margin if image/file exists
+                (imageUrl || fileUrl || voiceMessageUrl) && { marginTop: 4 }, // Add margin if image/file exists
               ]}
             >
               {text.trim()}
@@ -355,6 +477,31 @@ const styles = StyleSheet.create({
   forwardedText: {
     fontSize: 12,
     fontStyle: "italic",
+  },
+  // Voice Message Styles
+  voicePlayerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    minWidth: 150,
+    paddingVertical: 5,
+  },
+  voiceInfo: {
+    marginLeft: 10,
+    flex: 1,
+  },
+  voiceProgressBar: {
+    height: 4,
+    borderRadius: 2,
+    width: "100%",
+    marginBottom: 4,
+    overflow: "hidden",
+  },
+  voiceProgressFill: {
+    height: "100%",
+    borderRadius: 2,
+  },
+  voiceDurationText: {
+    fontSize: 12,
   },
 });
 

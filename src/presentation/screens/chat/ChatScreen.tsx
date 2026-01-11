@@ -441,6 +441,42 @@ function ChatScreen() {
     };
   };
 
+  const handleSendVoiceMessage = async (uri: string) => {
+    if (!authUser?.id) return;
+    const receiverId = isGroup ? groupId : userId;
+    if (!receiverId) return;
+
+    try {
+      // 1. Upload Voice Message
+      console.log("Uploading voice message...", uri);
+      const voiceUrl = await chatUseCases.uploadVoiceMessage(uri);
+      console.log("Voice message uploaded:", voiceUrl);
+
+      // 2. Send Message
+      const replyData = replyingTo
+        ? {
+            content: replyingTo.content,
+            senderId: replyingTo.senderId,
+            senderName: resolveSenderName(replyingTo.senderId),
+          }
+        : undefined;
+
+      await chatUseCases.sendMessage(
+        authUser.id,
+        receiverId,
+        "Voice Message", // Fallback text content
+        replyData,
+        undefined, // imageUrl
+        undefined, // fileUrl
+        voiceUrl // voiceMessageUrl
+      );
+      setReplyingTo(null);
+    } catch (error) {
+      console.error("Failed to send voice message:", error);
+      Alert.alert("Error", "Failed to send voice message.");
+    }
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -479,6 +515,7 @@ function ChatScreen() {
                 replyTo={item.replyTo} // Pass reply info
                 imageUrl={item.imageUrl} // Pass image URL
                 fileUrl={item.fileUrl} // Pass file URL
+                voiceMessageUrl={item.voiceMessageUrl} // Pass voice message URL
                 onLongPress={(event) => handleMessageLongPress(item, event)} // New handler
                 isForwarded={item.isForwarded} // Pass forwarded status
               />
@@ -504,6 +541,7 @@ function ChatScreen() {
           onCancelReply={() => setReplyingTo(null)}
           onSendImage={handleSendImage}
           onSendFile={handleSendFile}
+          onSendVoiceMessage={handleSendVoiceMessage}
         />
       </KeyboardAvoidingView>
 
