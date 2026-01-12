@@ -1,5 +1,39 @@
 # Requirements
 
+- [1. Project Overview](#1-project-overview)
+- [2. User Stories and Acceptance Criteria](#2-user-stories-and-acceptance-criteria)
+  - [2.1 Authentication](#21-authentication)
+  - [2.2 User Management & Social Graph](#22-user-management--social-graph)
+  - [2.3 Messaging (1-on-1 & Group)](#23-messaging-1-on-1--group)
+  - [2.4 Settings & UX](#24-settings--ux)
+- [3. Functional Requirements](#3-functional-requirements)
+  - [3.1 Authentication & Onboarding](#31-authentication--onboarding)
+  - [3.2 User Management & Social Graph](#32-user-management--social-graph)
+  - [3.3 Real-Time Messaging (1-on-1)](#33-real-time-messaging-1-on-1)
+  - [3.4 Advanced Messaging Features](#34-advanced-messaging-features)
+  - [3.5 Group Chat](#35-group-chat)
+  - [3.6 Settings & Preferences](#36-settings--preferences)
+- [4. Non-Functional Requirements](#4-non-functional-requirements)
+  - [4.1 Operational Requirements](#41-operational-requirements)
+  - [4.2 Performance Requirements](#42-performance-requirements)
+  - [4.3 Security Requirements](#43-security-requirements)
+  - [4.4 Cultural and Political Requirements](#44-cultural-and-political-requirements)
+- [5. API Specifications](#5-api-specifications)
+  - [5.1 Authentication API (Firebase Authentication)](#51-authentication-api-firebase-authentication)
+  - [5.2 User Management & Data API (Firebase Firestore)](#52-user-management--data-api-firebase-firestore)
+  - [5.3 Messaging API (Firebase Firestore)](#53-messaging-api-firebase-firestore)
+  - [5.4 Storage API (Cloudinary)](#54-storage-api-cloudinary)
+- [6. Database Scheme](#6-database-scheme)
+  - [6.1 Root Nodes Overview](#61-root-nodes-overview)
+  - [6.2 Detailed Node Schemas](#62-detailed-node-schemas)
+    - [6.2.1 `users` Node](#621-users-node)
+    - [6.2.2 `messages` Node](#622-messages-node)
+    - [6.2.3 `groupChats` Node](#623-groupchats-node)
+    - [6.2.4 `notifications` Node](#624-notifications-node)
+    - [6.2.5 `typingStatus` Node](#625-typingstatus-node)
+- [7. Technical Constraints](#7-technical-constraints)
+- [8. Environment Variable List](#8-environment-variable-list)
+
 ## 1. Project Overview
 
 The **Modern Messaging App** is a cross-platform mobile application designed to provide a seamless, real-time communication experience similar to industry leaders like Meta Messenger. Built with **React Native** and **Expo**, it leverages **Firebase** for backend services including authentication, real-time database, and storage. The application prioritizes a modern user interface, secure data handling, and a robust set of messaging features.
@@ -81,7 +115,7 @@ The **Modern Messaging App** is a cross-platform mobile application designed to 
 - **REQ022 Group Management**:
   - **Rename Group**: Users must be able to change the name of the group chat.
   - **Add Members**: Users must be able to add new members to an existing group.
-  - **Remove Members**: Admin users (or all users, depending on policy) must be able to remove members from the group.
+  - **Remove Members**: Any member can add new friends to the group.
 - **REQ023 Group Messaging**: All messaging features (text, media, reactions, etc.) must function within a group context for all members.
 
 ### 3.6 Settings & Preferences
@@ -116,15 +150,9 @@ The **Modern Messaging App** is a cross-platform mobile application designed to 
 - **REQ037 Accessibility**: The interface should utilize standard font sizes and high-contrast colors (especially in Dark Mode) to ensure readability for users with visual impairments.
 - **REQ038 Inclusive Design**: The application should use neutral and inclusive language in all user-facing text and error messages.
 
-## 5. Technical Constraints
+## 5. API Specifications
 
-- **TC-001 Framework**: Must be built using React Native with Expo Managed Workflow.
-- **TC-002 Backend**: Must use Firebase for Authentication, Firestore (Database), and Storage.
-- **TC-003 Language**: Primary development language is TypeScript.
-
-## 6. API Specifications
-
-### 6.1 Authentication API (Firebase Authentication)
+### 5.1 Authentication API (Firebase Authentication)
 
 - **Purpose**: Handles user registration, login, logout, and session management.
 - **Services Used**: Firebase Authentication.
@@ -134,52 +162,50 @@ The **Modern Messaging App** is a cross-platform mobile application designed to 
   - `signOut()`: Logs out the current user.
   - `onAuthStateChanged(callback)`: Observes user authentication state changes.
 
-### 6.2 User Management & Data API (Firebase Firestore)
+### 5.2 User Management & Data API (Firebase Realtime Database)
 
 - **Purpose**: Manages user profiles, friend lists, friend requests, and presence status.
-- **Services Used**: Firebase Firestore (NoSQL Document Database).
-- **Key Collections/Operations**:
-  - **`users` Collection**: Stores user profiles (e.g., `uid`, `username`, `email`, `profilePictureUrl`, `status` - online/offline).
-    - `addDoc(users, userProfile)`: Create new user profile.
-    - `updateDoc(userRef, { profilePictureUrl, username })`: Update user profile.
-    - `getDoc(userRef)`: Retrieve user profile.
-    - `query(users, where('username', '==', 'searchterm'))`: Search for users.
-  - **`friendRequests` Collection**: Stores pending friend requests.
-    - `addDoc(friendRequests, { fromUserId, toUserId, status })`: Send a friend request.
-    - `updateDoc(requestRef, { status: 'accepted'/'rejected' })`: Accept/Reject request.
-  - **`friends` Sub-collection**: Each user document has a sub-collection for their friends.
-    - `addDoc(userFriendsCollection, { friendId })`: Add a friend.
-    - `deleteDoc(friendRef)`: Remove a friend.
+- **Services Used**: Firebase Realtime Database.
+- **Key Nodes/Operations**:
+  - **`users` Node**: Stores user profiles (e.g., `id`, `username`, `email`, `profilePictureUrl`, `isOnline`).
+    - `set(users/{uid}, userProfile)`: Create/Update user profile.
+    - `get(users/{uid})`: Retrieve user profile.
+    - `query(users, orderByChild('username'), equalTo('searchterm'))`: Search for users.
+  - **`friends` Child Path**: Stored as an array within `users/{uid}/friends`.
+  - **`friendRequests` Child Path**: Stored as an array within `users/{uid}/friendRequests` (incoming).
+  - **`outgoingFriendRequests` Child Path**: Stored as an array within `users/{uid}/outgoingFriendRequests`.
 
-### 6.3 Messaging API (Firebase Firestore)
+### 5.3 Messaging API (Firebase Realtime Database)
 
 - **Purpose**: Handles real-time 1-on-1 and group messaging, message status, reactions, and typing indicators.
-- **Services Used**: Firebase Firestore (NoSQL Document Database) with real-time listeners.
-- **Key Collections/Operations**:
-  - **`chats` Collection**: Represents individual or group chat conversations.
-    - `addDoc(chats, { type, members, lastMessage, timestamp })`: Create new chat.
-  - **`messages` Sub-collection**: Each chat document has a sub-collection for its messages.
-    - `addDoc(chatMessagesCollection, { senderId, content, type, timestamp, reactions, replyToMessageId })`: Send new message.
-    - `onSnapshot(query(chatMessagesCollection, orderBy('timestamp')))`: Real-time message fetching.
-    - `updateDoc(messageRef, { reactions })`: Add/remove message reactions.
-  - **`typingIndicators` Collection**: Stores temporary typing status.
-    - `setDoc(typingIndicatorRef, { userId, isTyping, chatId })`: Set typing status.
-    - `onSnapshot(typingIndicatorQuery)`: Real-time typing status updates.
+- **Services Used**: Firebase Realtime Database with real-time listeners.
+- **Key Nodes/Operations**:
+  - **`messages` Node**: Stores a flat list of all messages.
+    - `set(messages/{messageId}, message)`: Send new message.
+    - `query(messages, orderByChild('senderId'), equalTo(userId))`: Fetch messages by sender (less efficient for chats).
+    - `query(messages, orderByChild('receiverId'), equalTo(chatId/userId))`: Fetch messages by receiver (less efficient for chats).
+  - **`groupChats` Node**: Stores metadata for group chat conversations.
+    - `set(groupChats/{groupId}, groupChatData)`: Create/Update group chat.
+    - `query(groupChats, orderByChild('memberIds'), arrayContains(userId))`: Find group chats a user is in.
+  - **`typingStatus` Node**: Stores temporary typing status.
+    - `set(typingStatus/{chatId}/{userId}, true)`: Set typing status.
+    - `remove(typingStatus/{chatId}/{userId})`: Clear typing status.
+    - `onValue(typingStatus/{chatId})`: Observe typing status updates.
 
-### 6.4 Storage API (Cloudinary)
+### 5.4 Storage API (Cloudinary)
 
 - **Purpose**: Stores and serves rich media files (images, videos, raw files) sent in chats.
 - **Services Used**: Cloudinary (third-party cloud media management service).
 - **Key Operations**:
   - `upload(file, upload_preset)`: Uploads a file (image, video) to Cloudinary.
-  - Returns a secure URL for the uploaded asset, which is then stored in Firebase Firestore as part of the message content.
+  - Returns a secure URL for the uploaded asset, which is then stored in Realtime Database as part of the message content.
   - Uses environment variables for configuration (`EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME`, `EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET`).
 
-## 7. Database Scheme
+## 6. Database Scheme
 
 The application uses **Firebase Realtime Database (RTDB)** exclusively. Data is structured as a JSON tree with the following root nodes.
 
-### 7.1 Root Nodes Overview
+### 6.1 Root Nodes Overview
 
 - **`users`**: Stores user profiles, including friend lists and friend requests.
 - **`messages`**: Stores a flat list of all messages (both 1-on-1 and group).
@@ -189,9 +215,9 @@ The application uses **Firebase Realtime Database (RTDB)** exclusively. Data is 
 
 _Note: The codebase does not currently utilize a `userChatData` node, although it may be visible in the database console if created manually or by previous versions._
 
-### 7.2 Detailed Node Schemas
+### 6.2 Detailed Node Schemas
 
-#### 7.2.1 `users` Node
+#### 6.2.1 `users` Node
 
 - **Path**: `users/{userId}`
 - **Fields**:
@@ -204,7 +230,7 @@ _Note: The codebase does not currently utilize a `userChatData` node, although i
   - `outgoingFriendRequests`: `string[]` (Array of outgoing friend request User IDs)
   - `lastReadTimestamps`: `Record<string, number>` (Map of chatId to timestamp)
 
-#### 7.2.2 `messages` Node
+#### 6.2.2 `messages` Node
 
 - **Path**: `messages/{messageId}`
 - **Description**: A flat list of all messages.
@@ -218,7 +244,7 @@ _Note: The codebase does not currently utilize a `userChatData` node, although i
   - `replyTo`: `object` (Optional reply context)
   - `imageUrl`, `fileUrl`, `voiceMessageUrl`: `string` (Optional)
 
-#### 7.2.3 `groupChats` Node
+#### 6.2.3 `groupChats` Node
 
 - **Path**: `groupChats/{groupChatId}`
 - **Fields**:
@@ -226,7 +252,7 @@ _Note: The codebase does not currently utilize a `userChatData` node, although i
   - `name`: `string`
   - `memberIds`: `string[]` (Array of User IDs in the group)
 
-#### 7.2.4 `notifications` Node
+#### 6.2.4 `notifications` Node
 
 - **Path**: `notifications/{recipientUserId}/{notificationId}`
 - **Fields**:
@@ -238,18 +264,18 @@ _Note: The codebase does not currently utilize a `userChatData` node, although i
   - `createdAt`: `number`
   - `data`: `object`
 
-#### 7.2.5 `typingStatus` Node
+#### 6.2.5 `typingStatus` Node
 
 - **Path**: `typingStatus/{chatId}/{userId}`
 - **Value**: `boolean` (true if typing)
 
-## 8. Technical Constraints
+## 7. Technical Constraints
 
 - **TC-001 Framework**: Must be built using React Native with Expo Managed Workflow.
-- **TC-002 Backend**: Must use Firebase for Authentication, Firestore (Database), and Storage.
+- **TC-002 Backend**: Must use Firebase for Authentication, Realtime Database, and Storage.
 - **TC-003 Language**: Primary development language is TypeScript.
 
-## 9. Environment Variable List
+## 8. Environment Variable List
 
 ```
 EXPO_PUBLIC_FIREBASE_API_KEY=
