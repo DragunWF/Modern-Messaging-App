@@ -72,12 +72,12 @@
 
 ## Documentation
 
-- [ ] `requirements.md`
+- [x] `requirements.md`
   - [x] Functional & non-functional requirements
-  - [ ] User stories and acceptance criteria
-  - [ ] API specifications
-  - [ ] Database scheme
-  - [ ] Environment variable list
+  - [x] User stories and acceptance criteria
+  - [x] API specifications
+  - [x] Database scheme
+  - [x] Environment variable list
 - [ ] `design.md`
   - [ ] Wireframes/UI mockups
   - [ ] Component architecture
