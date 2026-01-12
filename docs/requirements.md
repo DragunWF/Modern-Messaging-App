@@ -136,3 +136,77 @@ EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=
 EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME=
 EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=
 ```
+
+## 7. API Specifications
+
+### 7.1 Authentication API (Firebase Authentication)
+
+- **Purpose**: Handles user registration, login, logout, and session management.
+- **Services Used**: Firebase Authentication.
+- **Key Operations**:
+  - `createUserWithEmailAndPassword(email, password)`: Registers a new user.
+  - `signInWithEmailAndPassword(email, password)`: Logs in an existing user.
+  - `signOut()`: Logs out the current user.
+  - `onAuthStateChanged(callback)`: Observes user authentication state changes.
+
+### 7.2 User Management & Data API (Firebase Firestore)
+
+- **Purpose**: Manages user profiles, friend lists, friend requests, and presence status.
+- **Services Used**: Firebase Firestore (NoSQL Document Database).
+- **Key Collections/Operations**:
+  - **`users` Collection**: Stores user profiles (e.g., `uid`, `username`, `email`, `profilePictureUrl`, `status` - online/offline).
+    - `addDoc(users, userProfile)`: Create new user profile.
+    - `updateDoc(userRef, { profilePictureUrl, username })`: Update user profile.
+    - `getDoc(userRef)`: Retrieve user profile.
+    - `query(users, where('username', '==', 'searchterm'))`: Search for users.
+  - **`friendRequests` Collection**: Stores pending friend requests.
+    - `addDoc(friendRequests, { fromUserId, toUserId, status })`: Send a friend request.
+    - `updateDoc(requestRef, { status: 'accepted'/'rejected' })`: Accept/Reject request.
+  - **`friends` Sub-collection**: Each user document has a sub-collection for their friends.
+    - `addDoc(userFriendsCollection, { friendId })`: Add a friend.
+    - `deleteDoc(friendRef)`: Remove a friend.
+
+### 7.3 Messaging API (Firebase Firestore)
+
+- **Purpose**: Handles real-time 1-on-1 and group messaging, message status, reactions, and typing indicators.
+- **Services Used**: Firebase Firestore (NoSQL Document Database) with real-time listeners.
+- **Key Collections/Operations**:
+  - **`chats` Collection**: Represents individual or group chat conversations.
+    - `addDoc(chats, { type, members, lastMessage, timestamp })`: Create new chat.
+  - **`messages` Sub-collection**: Each chat document has a sub-collection for its messages.
+    - `addDoc(chatMessagesCollection, { senderId, content, type, timestamp, reactions, replyToMessageId })`: Send new message.
+    - `onSnapshot(query(chatMessagesCollection, orderBy('timestamp')))`: Real-time message fetching.
+    - `updateDoc(messageRef, { reactions })`: Add/remove message reactions.
+  - **`typingIndicators` Collection**: Stores temporary typing status.
+    - `setDoc(typingIndicatorRef, { userId, isTyping, chatId })`: Set typing status.
+    - `onSnapshot(typingIndicatorQuery)`: Real-time typing status updates.
+
+### 7.4 Storage API (Cloudinary)
+
+- **Purpose**: Stores and serves rich media files (images, videos, raw files) sent in chats.
+- **Services Used**: Cloudinary (third-party cloud media management service).
+- **Key Operations**:
+  - `upload(file, upload_preset)`: Uploads a file (image, video) to Cloudinary.
+  - Returns a secure URL for the uploaded asset, which is then stored in Firebase Firestore as part of the message content.
+  - Uses environment variables for configuration (`EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME`, `EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET`).
+
+## 8. Technical Constraints
+
+- **TC-001 Framework**: Must be built using React Native with Expo Managed Workflow.
+- **TC-002 Backend**: Must use Firebase for Authentication, Firestore (Database), and Storage.
+- **TC-003 Language**: Primary development language is TypeScript.
+
+## 9. Environment Variable List
+
+```
+EXPO_PUBLIC_FIREBASE_API_KEY=
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
+EXPO_PUBLIC_FIREBASE_DATABASE_URL=
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+EXPO_PUBLIC_FIREBASE_APP_ID=
+EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=
+EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME=
+EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=
+```
