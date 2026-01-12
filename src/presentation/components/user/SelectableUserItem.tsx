@@ -50,11 +50,7 @@ const SelectableUserItem = ({
         </Text>
       </View>
       {isAlreadyMember ? (
-        <Ionicons
-          name="checkmark-circle"
-          size={24}
-          color={colors.primary}
-        />
+        <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
       ) : (
         <Ionicons
           name={isSelected ? "radio-button-on" : "radio-button-off"}

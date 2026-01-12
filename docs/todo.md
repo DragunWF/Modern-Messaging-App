@@ -73,7 +73,7 @@
 ## Documentation
 
 - [ ] `requirements.md`
-  - [ ] Functional & non-functional requirements
+  - [x] Functional & non-functional requirements
   - [ ] User stories and acceptance criteria
   - [ ] API specifications
   - [ ] Database scheme
