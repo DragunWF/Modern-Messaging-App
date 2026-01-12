@@ -17,17 +17,17 @@ _Note:_ This requirements document has been modified to cater towards mobile dev
 - Expo
 - Firebase
 
-## Requirements
+## Core
 
 ### Key Features
 
-- [ ] Real-time 1-on-1 and group messaging
-- [ ] Typing indicators with online/offline status
-- [ ] Message reactions, replies, and forwarding
-- [ ] Image, file, and voice message support
-- [ ] User profiles, friend requests, search
-- [ ] Notifications and chat list unread counts
-- [ ] Dark/light theme toggle
+- [x] Real-time 1-on-1 and group messaging
+- [x] Typing indicators with online/offline status
+- [x] Message reactions, replies, and forwarding
+- [x] Image, file, and voice message support
+- [x] User profiles, friend requests, search
+- [x] Notifications and chat list unread counts
+- [x] Dark/light theme toggle
 
 ### Deliverables
 
