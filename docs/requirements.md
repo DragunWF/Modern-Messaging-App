@@ -122,24 +122,9 @@ The **Modern Messaging App** is a cross-platform mobile application designed to 
 - **TC-002 Backend**: Must use Firebase for Authentication, Firestore (Database), and Storage.
 - **TC-003 Language**: Primary development language is TypeScript.
 
-## 6. Environment Variable List
+## 6. API Specifications
 
-```
-EXPO_PUBLIC_FIREBASE_API_KEY=
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
-EXPO_PUBLIC_FIREBASE_DATABASE_URL=
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-EXPO_PUBLIC_FIREBASE_APP_ID=
-EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=
-EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME=
-EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=
-```
-
-## 7. API Specifications
-
-### 7.1 Authentication API (Firebase Authentication)
+### 6.1 Authentication API (Firebase Authentication)
 
 - **Purpose**: Handles user registration, login, logout, and session management.
 - **Services Used**: Firebase Authentication.
@@ -149,7 +134,7 @@ EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=
   - `signOut()`: Logs out the current user.
   - `onAuthStateChanged(callback)`: Observes user authentication state changes.
 
-### 7.2 User Management & Data API (Firebase Firestore)
+### 6.2 User Management & Data API (Firebase Firestore)
 
 - **Purpose**: Manages user profiles, friend lists, friend requests, and presence status.
 - **Services Used**: Firebase Firestore (NoSQL Document Database).
@@ -166,7 +151,7 @@ EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=
     - `addDoc(userFriendsCollection, { friendId })`: Add a friend.
     - `deleteDoc(friendRef)`: Remove a friend.
 
-### 7.3 Messaging API (Firebase Firestore)
+### 6.3 Messaging API (Firebase Firestore)
 
 - **Purpose**: Handles real-time 1-on-1 and group messaging, message status, reactions, and typing indicators.
 - **Services Used**: Firebase Firestore (NoSQL Document Database) with real-time listeners.
@@ -181,7 +166,7 @@ EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=
     - `setDoc(typingIndicatorRef, { userId, isTyping, chatId })`: Set typing status.
     - `onSnapshot(typingIndicatorQuery)`: Real-time typing status updates.
 
-### 7.4 Storage API (Cloudinary)
+### 6.4 Storage API (Cloudinary)
 
 - **Purpose**: Stores and serves rich media files (images, videos, raw files) sent in chats.
 - **Services Used**: Cloudinary (third-party cloud media management service).
@@ -189,6 +174,74 @@ EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=
   - `upload(file, upload_preset)`: Uploads a file (image, video) to Cloudinary.
   - Returns a secure URL for the uploaded asset, which is then stored in Firebase Firestore as part of the message content.
   - Uses environment variables for configuration (`EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME`, `EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET`).
+
+## 7. Database Scheme
+
+The application uses **Firebase Realtime Database (RTDB)** exclusively. Data is structured as a JSON tree with the following root nodes.
+
+### 7.1 Root Nodes Overview
+
+- **`users`**: Stores user profiles, including friend lists and friend requests.
+- **`messages`**: Stores a flat list of all messages (both 1-on-1 and group).
+- **`groupChats`**: Stores metadata for group chat conversations.
+- **`notifications`**: Stores user-specific notifications.
+- **`typingStatus`**: Stores ephemeral typing indicators.
+
+_Note: The codebase does not currently utilize a `userChatData` node, although it may be visible in the database console if created manually or by previous versions._
+
+### 7.2 Detailed Node Schemas
+
+#### 7.2.1 `users` Node
+
+- **Path**: `users/{userId}`
+- **Fields**:
+  - `id`: `string` (User ID)
+  - `username`: `string`
+  - `email`: `string`
+  - `isOnline`: `boolean`
+  - `friends`: `string[]` (Array of friend User IDs)
+  - `friendRequests`: `string[]` (Array of incoming friend request User IDs)
+  - `outgoingFriendRequests`: `string[]` (Array of outgoing friend request User IDs)
+  - `lastReadTimestamps`: `Record<string, number>` (Map of chatId to timestamp)
+
+#### 7.2.2 `messages` Node
+
+- **Path**: `messages/{messageId}`
+- **Description**: A flat list of all messages.
+- **Fields**:
+  - `id`: `string`
+  - `senderId`: `string`
+  - `receiverId`: `string` (User ID for 1-on-1, Group ID for groups)
+  - `content`: `string`
+  - `timestamp`: `number`
+  - `reactions`: `Record<string, string[]>`
+  - `replyTo`: `object` (Optional reply context)
+  - `imageUrl`, `fileUrl`, `voiceMessageUrl`: `string` (Optional)
+
+#### 7.2.3 `groupChats` Node
+
+- **Path**: `groupChats/{groupChatId}`
+- **Fields**:
+  - `id`: `string`
+  - `name`: `string`
+  - `memberIds`: `string[]` (Array of User IDs in the group)
+
+#### 7.2.4 `notifications` Node
+
+- **Path**: `notifications/{recipientUserId}/{notificationId}`
+- **Fields**:
+  - `id`: `string`
+  - `recipientId`: `string`
+  - `senderId`: `string`
+  - `type`: `string` (`'FRIEND_REQUEST'`, `'FRIEND_REQUEST_ACCEPTED'`)
+  - `isRead`: `boolean`
+  - `createdAt`: `number`
+  - `data`: `object`
+
+#### 7.2.5 `typingStatus` Node
+
+- **Path**: `typingStatus/{chatId}/{userId}`
+- **Value**: `boolean` (true if typing)
 
 ## 8. Technical Constraints
 
