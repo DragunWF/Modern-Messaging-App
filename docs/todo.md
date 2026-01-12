@@ -80,7 +80,7 @@
   - [x] Environment variable list
 - [ ] `design.md`
   - [ ] Wireframes/UI mockups
-  - [ ] Component architecture
-  - [ ] State mangement strategy
-  - [ ] Real-time data flow
-  - [ ] Accessibility and branding guidelines
+  - [x] Component architecture
+  - [x] State mangement strategy
+  - [x] Real-time data flow
+  - [x] Accessibility and branding guidelines
