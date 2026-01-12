@@ -113,3 +113,35 @@ The application leverages the real-time capabilities of Firebase Realtime Databa
 - **Typing Indicators**: `ChatScreen` subscribes to the `typingStatus` node to show "User is typing..." animations.
 - **Friend Status**: `AuthContext` or Home screens subscribe to user status updates (Online/Offline).
 - **Group Updates**: Group metadata (name changes, member additions) is synced in real-time via `GroupChatRepository`.
+
+## 5. Accessibility and Branding Guidelines
+
+### 5.1 Accessibility Guidelines
+
+The application aims to provide an inclusive user experience by adhering to fundamental accessibility principles:
+
+- **Semantic Structure**: Utilizing appropriate React Native accessibility props (e.g., `accessibilityLabel`, `accessibilityHint`, `role`) to ensure UI elements are properly identified by screen readers.
+- **Color Contrast**: Adhering to WCAG guidelines for color contrast ratios to ensure text and interactive elements are readable in both light and dark themes. The chosen color palette (`src/shared/constants/colors.ts`) is designed with this in mind.
+- **Dynamic Type**: Supporting system-level font size adjustments to accommodate users with visual impairments.
+- **Touchable Areas**: Ensuring all interactive elements (buttons, icons) have a minimum touch target size of 48x48 dp to prevent accidental taps.
+- **Focus Management**: Managing keyboard focus order logically for users navigating with assistive technologies.
+
+### 5.2 Branding Guidelines
+
+The application's visual brand is "Fresh & Connected," reflecting its modern messaging purpose.
+
+- **Color Palette**: Defined in `src/shared/constants/colors.ts`.
+  - **Primary Green (`#22C55E`)**: The main brand color, used for active elements, outgoing messages, and key CTAs.
+  - **Neutrals**: A range of grays for text, backgrounds, and borders, ensuring a clean and professional look.
+  - **Semantic Colors**: Red for errors, amber for warnings, teal for information/links.
+  - **Theming**: Distinct light and dark themes (`lightTheme`, `darkTheme`) are provided, maintaining brand consistency across user preferences. The dark theme utilizes deeper forest tones to reduce eye strain.
+- **Typography**:
+  - Clean and modern sans-serif fonts should be used throughout the application to enhance readability.
+  - Font sizes are scaled appropriately for headings, body text, and captions, with consideration for dynamic type.
+- **Iconography**:
+  - Simple, recognizable line icons or filled icons should be used consistently.
+  - Icons should clearly communicate their purpose without relying solely on text labels.
+- **Overall UI/UX**:
+  - **Minimalist Design**: A clean, uncluttered interface to keep focus on communication.
+  - **Intuitive Navigation**: Clear and consistent navigation patterns.
+  - **Responsive Layouts**: UI elements adapt gracefully to different screen sizes and orientations.
