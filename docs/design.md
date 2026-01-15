@@ -1,8 +1,34 @@
 # Design Documentation
 
-## 1. Wireframes and UI Mockups
+## 1. Visual Design and Layouts
 
-_To be added._
+<table>
+  <tr>
+    <td align="center"><img src="images/login.png" width="200" /><br />Login</td>
+    <td align="center"><img src="images/register.png" width="200" /><br />Register</td>
+    <td align="center"><img src="images/home.png" width="200" /><br />Home</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="images/home-new-group-chat.png" width="200" /><br />New Group Chat</td>
+    <td align="center"><img src="images/discover.png" width="200" /><br />Discover</td>
+    <td align="center"><img src="images/notifications.png" width="200" /><br />Notifications</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="images/friend-chat.png" width="200" /><br />Friend Chat</td>
+    <td align="center"><img src="images/friend-profile.png" width="200" /><br />Friend Profile</td>
+    <td align="center"><img src="images/user-profile.png" width="200" /><br />User Profile</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="images/group-chat.png" width="200" /><br />Group Chat</td>
+    <td align="center"><img src="images/group-profile.png" width="200" /><br />Group Profile</td>
+    <td align="center"><img src="images/group-add-member.png" width="200" /><br />Add Member</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="images/settings-light.png" width="200" /><br />Settings (Light)</td>
+    <td align="center"><img src="images/settings-dark.png" width="200" /><br />Settings (Dark)</td>
+    <td></td>
+  </tr>
+</table>
 
 ## 2. Component Architecture
 
