@@ -1,5 +1,19 @@
 # Design Documentation
 
+- [1. Visual Design and Layouts](#1-visual-design-and-layouts)
+- [2. Component Architecture](#2-component-architecture)
+  - [2.1 Architectural Layers](#21-architectural-layers)
+  - [2.2 Dependency Rule](#22-dependency-rule)
+- [3. State Management Strategy](#3-state-management-strategy)
+  - [3.1 Global State (Context API)](#31-global-state-context-api)
+  - [3.2 Local UI State](#32-local-ui-state)
+- [4. Real-Time Data Flow](#4-real-time-data-flow)
+  - [4.1 Subscription Flow](#41-subscription-flow)
+  - [4.2 Key Real-Time Features](#42-key-real-time-features)
+- [5. Accessibility and Branding Guidelines](#5-accessibility-and-branding-guidelines)
+  - [5.1 Accessibility Guidelines](#51-accessibility-and-branding-guidelines)
+  - [5.2 Branding Guidelines](#52-branding-guidelines)
+
 ## 1. Visual Design and Layouts
 
 <table>
