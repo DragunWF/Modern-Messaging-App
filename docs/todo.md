@@ -72,15 +72,15 @@
 
 ## Documentation
 
-- [ ] `requirements.md`
+- [x] `requirements.md`
   - [x] Functional & non-functional requirements
-  - [ ] User stories and acceptance criteria
-  - [ ] API specifications
-  - [ ] Database scheme
-  - [ ] Environment variable list
-- [ ] `design.md`
-  - [ ] Wireframes/UI mockups
-  - [ ] Component architecture
-  - [ ] State mangement strategy
-  - [ ] Real-time data flow
-  - [ ] Accessibility and branding guidelines
+  - [x] User stories and acceptance criteria
+  - [x] API specifications
+  - [x] Database scheme
+  - [x] Environment variable list
+- [x] `design.md`
+  - [x] Wireframes/UI mockups (Renamed to Visual Design and Layouts)
+  - [x] Component architecture
+  - [x] State mangement strategy
+  - [x] Real-time data flow
+  - [x] Accessibility and branding guidelines

@@ -282,7 +282,6 @@ function HomeScreen() {
                   unreadMessageCount={getUnreadCountForFriend(item.id)}
                 />
               )}
-              alwaysBounceVertical={false}
               contentContainerStyle={styles.listContent}
               ListEmptyComponent={
                 displayedGroups.length === 0 ? (
@@ -319,6 +318,7 @@ const styles = StyleSheet.create({
   },
   friendListContainer: {
     marginTop: 18,
+    paddingBottom: 50,
   },
   searchAndCreateGroupContainer: {
     flexDirection: "row",

@@ -1,5 +1,7 @@
 # Modern Messaging App
 
+<p align="center"><img src="assets/icon.png" alt="Modern Messaging App Icon" width="150"/></p>
+
 ## Objective
 
 Design a cross-platform messaging application inspired by Meta Messenger to demonstrate skills at the following:
@@ -9,32 +11,34 @@ Design a cross-platform messaging application inspired by Meta Messenger to demo
 - Modern UI/UX implementation
 - Secure environment configuration and deployment
 
-_Note:_ This requirements document has been modified to cater towards mobile development instead of web development.
+_Note to Maui:_ This requirements document has been modified to cater towards mobile development instead of web development to align it with my upcoming OJT as we discussed in-person some months ago. I thought to align the tech stack for my upcoming OJT to both better prepare for my OJT and finish a requirement from ALPHA. Two birds one stone, pretty much. Hehe.
 
 ## Tech Stack
 
 - React Native
+- TypeScript
 - Expo
 - Firebase
 
-## Requirements
+## Core
 
 ### Key Features
 
-- [ ] Real-time 1-on-1 and group messaging
-- [ ] Typing indicators with online/offline status
-- [ ] Message reactions, replies, and forwarding
-- [ ] Image, file, and voice message support
-- [ ] User profiles, friend requests, search
-- [ ] Notifications and chat list unread counts
-- [ ] Dark/light theme toggle
+- [x] Real-time 1-on-1 and group messaging
+- [x] Typing indicators with online/offline status
+- [x] Message reactions, replies, and forwarding
+- [x] Image, file, and voice message support
+- [x] User profiles, friend requests, search
+- [x] Notifications and chat list unread counts
+- [x] Dark/light theme toggle
 
 ### Deliverables
 
 - [x] Project repository on GitHub
-- [ ] `requirements.md` and `design.md` files
-- [ ] Live deployed application with Expo link
-- [ ] Optional demo video
+- [x] `requirements.md` and `design.md` files
+- [x] Live deployed application with Expo link
+<p align="center">Scan to launch with Expo Go</p>
+<p align="center"><img src="assets/expo-qr-code.svg" alt="Expo QR Code" width="200"/></p>
 - [ ] Submit to Current Head Dev (Maui)
 
 ### Documentation
