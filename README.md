@@ -9,11 +9,12 @@ Design a cross-platform messaging application inspired by Meta Messenger to demo
 - Modern UI/UX implementation
 - Secure environment configuration and deployment
 
-_Note:_ This requirements document has been modified to cater towards mobile development instead of web development.
+_Note to Maui:_ This requirements document has been modified to cater towards mobile development instead of web development to align it with my upcoming OJT. I thought it best aligned for me so I can both prepare for my OJT and finish a requirement from ALPHA. Two birds one stone, pretty much. Hehe.
 
 ## Tech Stack
 
 - React Native
+- TypeScript
 - Expo
 - Firebase
 
@@ -32,9 +33,8 @@ _Note:_ This requirements document has been modified to cater towards mobile dev
 ### Deliverables
 
 - [x] Project repository on GitHub
-- [ ] `requirements.md` and `design.md` files
+- [x] `requirements.md` and `design.md` files
 - [ ] Live deployed application with Expo link
-- [ ] Optional demo video
 - [ ] Submit to Current Head Dev (Maui)
 
 ### Documentation
