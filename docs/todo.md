@@ -78,8 +78,8 @@
   - [x] API specifications
   - [x] Database scheme
   - [x] Environment variable list
-- [ ] `design.md`
-  - [ ] Wireframes/UI mockups
+- [x] `design.md`
+  - [x] Wireframes/UI mockups (Renamed to Visual Design and Layouts)
   - [x] Component architecture
   - [x] State mangement strategy
   - [x] Real-time data flow
