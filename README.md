@@ -39,7 +39,7 @@ _Note to Maui:_ This requirements document has been modified to cater towards mo
 - [x] Live deployed application with Expo link
 <p align="center">Scan to launch with Expo Go</p>
 <p align="center"><img src="assets/expo-qr-code.svg" alt="Expo QR Code" width="200"/></p>
-- [ ] Submit to Current Head Dev (Maui)
+- [x] Submit to Current Head Dev (Maui)
 
 ### Documentation
 
