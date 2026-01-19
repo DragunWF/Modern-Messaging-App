@@ -13,6 +13,9 @@ Design a cross-platform messaging application inspired by Meta Messenger to demo
 
 _Note to Maui:_ This requirements document has been modified to cater towards mobile development instead of web development to align it with my upcoming OJT as we discussed in-person some months ago. I thought to align the tech stack for my upcoming OJT to both better prepare for my OJT and finish a requirement from ALPHA. Two birds one stone, pretty much. Hehe.
 
+<p align="center">Scan to launch with Expo Go</p>
+<p align="center"><img src="assets/expo-qr-code.svg" alt="Expo QR Code" width="200"/></p>
+
 ## Tech Stack
 
 - React Native
@@ -37,8 +40,6 @@ _Note to Maui:_ This requirements document has been modified to cater towards mo
 - [x] Project repository on GitHub
 - [x] `requirements.md` and `design.md` files
 - [x] Live deployed application with Expo link
-<p align="center">Scan to launch with Expo Go</p>
-<p align="center"><img src="assets/expo-qr-code.svg" alt="Expo QR Code" width="200"/></p>
 - [x] Submit to Current Head Dev (Maui)
 
 ### Documentation
